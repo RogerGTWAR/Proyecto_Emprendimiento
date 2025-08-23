@@ -4,9 +4,14 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
-    "start:front": "npm run dev --prefix frontend",
-    "start:back": "npm run dev --prefix backend",
+    "dev": "concurrently \"npm:dev:front\" \"npm:dev:back\"",
+    "dev:front": "npm --prefix frontend run dev",
+    "dev:back": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build && npm --prefix backend run build",
+    "start": "npm --prefix backend run start",
+    "start:front": "npm --prefix frontend run dev",
+    "start:back": "npm --prefix backend run dev",
+    "postinstall": "npm --prefix frontend install && npm --prefix backend install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,9 +26,7 @@
   },
   "homepage": "https://github.com/RogerGTWAR/Proyecto_Emprendimiento#readme",
   "devDependencies": {
-    "concurrently": "^9.2.0"
-  },
-  "dependencies": {
-    "express": "^5.1.0"
+    "concurrently": "^9.2.0",
+    "nodemon": "^3.1.10"
   }
 }
