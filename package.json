@@ -1,0 +1,26 @@
+{
+  "name": "proyecto_emprendimiento",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "concurrently -n front,back -c auto \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "start:front": "npm run dev --prefix frontend",
+    "start:back": "npm run dev --prefix backend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RogerGTWAR/Proyecto_Emprendimiento.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RogerGTWAR/Proyecto_Emprendimiento/issues"
+  },
+  "homepage": "https://github.com/RogerGTWAR/Proyecto_Emprendimiento#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
