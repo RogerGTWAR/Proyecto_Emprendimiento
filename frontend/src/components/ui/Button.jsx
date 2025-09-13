@@ -4,9 +4,10 @@ const Button = ({ children, variant = 'primary', className = '', loading = false
   const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variants = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-500',
-    social: 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500'
+    primary: 'bg-[#209E7F] hover:bg-[#32C3A2] text-white focus:ring-[#32C3A2]',
+    secondary: 'bg-[#D1D5DB] hover:bg-[#c2c7cd] text-[#1E1E1E] focus:ring-[#c2c7cd]',
+    outline: 'border border-[#209E7F] text-[#209E7F] hover:bg-[#209E7F] hover:text-white focus:ring-[#209E7F]',
+    social: 'bg-white border border-[#D1D5DB] text-[#4B5563] hover:bg-[#F5F7FA] focus:ring-[#3B6DB3]'
   };
   
   return (

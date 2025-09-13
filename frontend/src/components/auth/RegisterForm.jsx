@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import { Link } from 'react-router-dom';
 
 const RegisterForm = () => {
   const { formData, setFormData, loading, register } = useAuthStore();
@@ -24,9 +25,10 @@ const RegisterForm = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#F5F7FA] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl w-full mx-auto flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-2xl">
-        <div className="w-full lg:w-2/5 bg-gradient-to-br from-blue-600 to-indigo-800 p-8 text-white flex flex-col justify-center">
+        {/* Sección izquierda - Actualizada con nueva paleta */}
+        <div className="w-full lg:w-2/5 bg-gradient-to-br from-[#111A3B] to-[#2D4E7A] p-8 text-white flex flex-col justify-center">
           <div className="text-center lg:text-left">
             <h1 className="text-3xl font-bold mb-4">Únete a MateriaLab</h1>
             <p className="text-lg opacity-90 mb-8">
@@ -74,18 +76,19 @@ const RegisterForm = () => {
           </div>
         </div>
 
+        {/* Sección derecha - Formulario */}
         <div className="w-full lg:w-3/5 bg-white p-8 flex items-center justify-center">
           <div className="w-full max-w-md">
             <div className="text-center">
               <img
                 alt="MateriaLab"
-                src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                className="mx-auto h-10 w-auto"
+                src="/Logo.png"
+                className="mx-auto h-16 w-auto"
               />
-              <h2 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">
+              <h2 className="mt-6 text-2xl font-bold tracking-tight text-[#1E1E1E]">
                 Registrar tu empresa
               </h2>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#4B5563]">
                 Crea tu cuenta para comenzar
               </p>
             </div>
@@ -104,11 +107,11 @@ const RegisterForm = () => {
                 />
 
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-[#1E1E1E]">
                     Tipo de Empresa
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent"
                     id="companyType"
                     name="companyType"
                     required
@@ -156,11 +159,11 @@ const RegisterForm = () => {
                 </Button>
               </form>
 
-              <p className="mt-8 text-center text-sm text-gray-500">
+              <p className="mt-8 text-center text-sm text-[#4B5563]">
                 ¿Ya tienes cuenta?{' '}
-                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                <Link to="/login" className="font-semibold text-[#209E7F] hover:text-[#32C3A2]">
                   Iniciar sesión
-                </a>
+                </Link>
               </p>
             </div>
           </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
+import { Link } from 'react-router-dom';
 
 const LoginForm = () => {
   const { formData, setFormData, loading, login } = useAuthStore();
@@ -16,9 +17,9 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#F5F7FA] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl w-full mx-auto flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-2xl">
-        <div className="w-full lg:w-2/5 bg-gradient-to-br from-blue-600 to-indigo-800 p-8 text-white flex flex-col justify-center">
+        <div className="w-full lg:w-2/5 bg-gradient-to-br from-[#111A3B] to-[#2D4E7A] p-8 text-white flex flex-col justify-center">
           <div className="text-center lg:text-left">
             <h1 className="text-3xl font-bold mb-4">Bienvenido a MateriaLab</h1>
             <p className="text-lg opacity-90 mb-8">
@@ -71,13 +72,13 @@ const LoginForm = () => {
             <div className="text-center">
               <img
                 alt="MateriaLab"
-                src="https://tailwindui.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                className="mx-auto h-10 w-auto"
+                src="/Logo.png"
+                className="mx-auto h-16 w-auto"
               />
-              <h2 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">
+              <h2 className="mt-6 text-2xl font-bold tracking-tight text-[#1E1E1E]">
                 Iniciar sesión
               </h2>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#4B5563]">
                 Ingresa a tu cuenta para comenzar
               </p>
             </div>
@@ -114,15 +115,15 @@ const LoginForm = () => {
                       id="remember-me"
                       name="remember-me"
                       type="checkbox"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-[#209E7F] focus:ring-[#209E7F] border-gray-300 rounded"
                     />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                    <label htmlFor="remember-me" className="ml-2 block text-sm text-[#1E1E1E]">
                       Recordarme
                     </label>
                   </div>
 
                   <div className="text-sm">
-                    <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    <a href="#" className="font-medium text-[#209E7F] hover:text-[#32C3A2]">
                       ¿Olvidaste tu contraseña?
                     </a>
                   </div>
@@ -140,17 +141,17 @@ const LoginForm = () => {
               <div className="mt-6">
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
+                    <div className="w-full border-t border-[#D1D5DB]" />
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">¿No tienes una cuenta?</span>
+                    <span className="px-2 bg-white text-[#4B5563]">¿No tienes una cuenta?</span>
                   </div>
                 </div>
 
                 <div className="mt-4 text-center">
-                  <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                  <Link to="/register" className="font-medium text-[#209E7F] hover:text-[#32C3A2]">
                     Regístrate ahora
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
