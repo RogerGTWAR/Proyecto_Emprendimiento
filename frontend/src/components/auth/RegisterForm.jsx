@@ -27,7 +27,6 @@ const RegisterForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F5F7FA] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl w-full mx-auto flex flex-col lg:flex-row rounded-2xl overflow-hidden shadow-2xl">
-        {/* Sección izquierda - Actualizada con nueva paleta */}
         <div className="w-full lg:w-2/5 bg-gradient-to-br from-[#111A3B] to-[#2D4E7A] p-8 text-white flex flex-col justify-center">
           <div className="text-center lg:text-left">
             <h1 className="text-3xl font-bold mb-4">Únete a MateriaLab</h1>
@@ -76,7 +75,6 @@ const RegisterForm = () => {
           </div>
         </div>
 
-        {/* Sección derecha - Formulario */}
         <div className="w-full lg:w-3/5 bg-white p-8 flex items-center justify-center">
           <div className="w-full max-w-md">
             <div className="text-center">

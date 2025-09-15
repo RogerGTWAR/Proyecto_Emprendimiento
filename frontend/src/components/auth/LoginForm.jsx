@@ -2,14 +2,16 @@ import React from 'react';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 
 const LoginForm = () => {
   const { formData, setFormData, loading, login } = useAuthStore();
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await login();
+    navigate('/dashboard'); // Redireccion hardcodeada al dashboard
   };
 
   const handleChange = (e) => {
