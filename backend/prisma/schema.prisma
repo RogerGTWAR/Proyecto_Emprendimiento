@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  // remove: output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -39,13 +38,6 @@ model departments {
   workers     workers[]
 }
 
-model images {
-  id              Int              @id @default(autoincrement())
-  image_url       String           @db.VarChar(255)
-  picturable_item picturable_items
-  item_id         Int
-}
-
 model likes {
   id         Int      @id @default(autoincrement())
   user_id    Int
@@ -75,6 +67,7 @@ model materials {
   description      String?
   waste_percentage Decimal            @db.Decimal
   unit_cost        Decimal            @db.Decimal
+  material_img     String?            @db.VarChar(255)
   material_unit_id Int
   material_tag     material_tag[]
   material_units   material_units     @relation(fields: [material_unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -135,6 +128,7 @@ model products {
   estimated_time   Int
   description      String?
   profit_margin    Decimal            @db.Decimal
+  product_img      String?            @db.VarChar(255)
   company_id       Int
   processes        processes[]
   product_material product_material[]

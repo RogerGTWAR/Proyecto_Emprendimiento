@@ -1,15 +1,12 @@
 import express from 'express';
 import prisma from './database.js';
+import materialRouter from './routes/materialRoutes.js';
 
 const app = express();
 
-app.get('/api/hello', async (req, res) => {
+app.use(express.json());
 
-  const users = await prisma.users.findMany();
-
-  res.json(users);
-
-});
+app.use('/api/materials', materialRouter);
 
 app.listen(3000, () => console.log('Backend en http://localhost:3000'));
 
