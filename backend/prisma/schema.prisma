@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+  // remove: output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model comments {
+  id             Int        @id @default(autoincrement())
+  user_id        Int
+  content        String
+  parent_id      Int?
+  comments       comments?  @relation("commentsTocomments", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_comments comments[] @relation("commentsTocomments")
+  users          users      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  likes          likes[]
+}
+
+model companies {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
+  type        String        @db.VarChar(255)
+  user_id     Int           @unique
+  users       users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  departments departments[]
+  processes   processes[]
+  products    products[]
+}
+
+model departments {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  description String?
+  company_id  Int
+  companies   companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  workers     workers[]
+}
+
+model images {
+  id              Int              @id @default(autoincrement())
+  image_url       String           @db.VarChar(255)
+  picturable_item picturable_items
+  item_id         Int
+}
+
+model likes {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  comment_id Int
+  comments   comments @relation(fields: [comment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model material_tag {
+  id          Int       @id @default(autoincrement())
+  material_id Int
+  tag_id      Int
+  materials   materials @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tags        tags      @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model material_units {
+  id        Int         @id @default(autoincrement())
+  unit_name String      @db.VarChar(20)
+  materials materials[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model materials {
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(255)
+  description      String?
+  waste_percentage Decimal            @db.Decimal
+  unit_cost        Decimal            @db.Decimal
+  material_unit_id Int
+  material_tag     material_tag[]
+  material_units   material_units     @relation(fields: [material_unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  product_material product_material[]
+}
+
+model process_service {
+  id         Int       @id @default(autoincrement())
+  process_id Int
+  service_id Int
+  processes  processes @relation(fields: [process_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  services   services  @relation(fields: [service_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model process_worker {
+  id         Int       @id @default(autoincrement())
+  process_id Int
+  worker_id  Int
+  processes  processes @relation(fields: [process_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  workers    workers   @relation(fields: [worker_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model processes {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(255)
+  quantity        Int
+  product_id      Int
+  company_id      Int
+  process_service process_service[]
+  process_worker  process_worker[]
+  companies       companies         @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  products        products          @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model product_material {
+  id          Int       @id @default(autoincrement())
+  product_id  Int
+  material_id Int
+  quantity    Int       @db.SmallInt
+  materials   materials @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  products    products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model product_tag {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  tag_id     Int
+  products   products @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tags       tags     @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model products {
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(255)
+  estimated_time   Int
+  description      String?
+  profit_margin    Decimal            @db.Decimal
+  company_id       Int
+  processes        processes[]
+  product_material product_material[]
+  product_tag      product_tag[]
+  companies        companies          @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ratings          ratings[]
+  wishlist         wishlist[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ratings {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  stars      Int      @db.SmallInt
+  products   products @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model services {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(255)
+  cost            Decimal           @db.Decimal
+  process_service process_service[]
+}
+
+model tags {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  material_tag material_tag[]
+  product_tag  product_tag[]
+}
+
+model users {
+  id        Int        @id @default(autoincrement())
+  email     String     @db.VarChar(255)
+  password  String     @db.VarChar(255)
+  is_owner  Boolean?   @default(false)
+  comments  comments[]
+  companies companies?
+  likes     likes[]
+  ratings   ratings[]
+  wishlist  wishlist[]
+}
+
+model wishlist {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  products   products @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model workers {
+  id             Int              @id @default(autoincrement())
+  firstname      String           @db.VarChar(255)
+  lastname       String           @db.VarChar(255)
+  hourly_fee     Decimal          @db.Decimal
+  department_id  Int
+  process_worker process_worker[]
+  departments    departments      @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum picturable_items {
+  product
+  material
+}
