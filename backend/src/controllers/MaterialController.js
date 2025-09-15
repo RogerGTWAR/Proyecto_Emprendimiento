@@ -234,6 +234,8 @@ export default class MaterialController {
       });
     }
 
+    // TODO: Implement soft delete to avoid foreignkey constraints
+
     try {
       const { id: deletedId } = await prisma.materials.delete({ where: { id: materialId } });
 
