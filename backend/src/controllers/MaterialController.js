@@ -6,7 +6,9 @@ export default class MaterialController {
   static async getAll(req, res) {
 
     try {
-      const materials = await prisma.materials.findMany();
+      const materials = await prisma.materials.findMany({
+        where: { deleted_at: null }
+      });
 
       res.json({
         ok: true,
@@ -38,11 +40,14 @@ export default class MaterialController {
 
     try {
 
-      material = await prisma.materials.findUnique({
-        where: { id: materialId }
+      material = await prisma.materials.findFirst({
+        where: {
+          AND: [{ id: materialId }, { deleted_at: null }]
+        }
       });
 
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         ok: false,
         msg: "Server Error, something went wrong"
@@ -234,18 +239,24 @@ export default class MaterialController {
       });
     }
 
-    // TODO: Implement soft delete to avoid foreignkey constraints
-
     try {
-      const { id: deletedId } = await prisma.materials.delete({ where: { id: materialId } });
+      const { id: inactiveId } = await prisma.materials.update(
+        {
+          where: { id: materialId },
+          data: {
+            deleted_at: new Date()
+          }
+        }
+      );
 
       res.json({
         ok: true,
         msg: "Se elimino el material correctamente",
-        id: deletedId
+        id: inactiveId
       });
     } catch (error) {
-      res.json({
+      console.log(error);
+      res.status(500).json({
         ok: false,
         msg: "Server error something went wrong",
       });

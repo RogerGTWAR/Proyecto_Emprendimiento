@@ -12,6 +12,7 @@ model comments {
   user_id        Int
   content        String
   parent_id      Int?
+  deleted_at     DateTime?  @db.Timestamp(6)
   comments       comments?  @relation("commentsTocomments", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   other_comments comments[] @relation("commentsTocomments")
   users          users      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -23,6 +24,7 @@ model companies {
   name        String        @db.VarChar(255)
   type        String        @db.VarChar(255)
   user_id     Int           @unique
+  deleted_at  DateTime?     @db.Timestamp(6)
   users       users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   departments departments[]
   materials   materials[]
@@ -35,30 +37,34 @@ model departments {
   name        String    @db.VarChar(255)
   description String?
   company_id  Int
+  deleted_at  DateTime? @db.Timestamp(6)
   companies   companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   workers     workers[]
 }
 
 model likes {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   user_id    Int
   comment_id Int
-  comments   comments @relation(fields: [comment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  deleted_at DateTime? @db.Timestamp(6)
+  comments   comments  @relation(fields: [comment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model material_tag {
   id          Int       @id @default(autoincrement())
   material_id Int
   tag_id      Int
+  deleted_at  DateTime? @db.Timestamp(6)
   materials   materials @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   tags        tags      @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model material_units {
-  id        Int         @id @default(autoincrement())
-  unit_name String      @db.VarChar(20)
-  materials materials[]
+  id         Int         @id @default(autoincrement())
+  unit_name  String      @db.VarChar(20)
+  deleted_at DateTime?   @db.Timestamp(6)
+  materials  materials[]
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -69,8 +75,9 @@ model materials {
   waste_percentage Decimal            @db.Decimal
   unit_cost        Decimal            @db.Decimal
   material_img     String?            @db.VarChar(255)
+  company_id       Int
   material_unit_id Int
-  company_id       Int                @default(1)
+  deleted_at       DateTime?          @db.Timestamp(6)
   material_tag     material_tag[]
   companies        companies          @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   material_units   material_units     @relation(fields: [material_unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -81,6 +88,7 @@ model process_service {
   id         Int       @id @default(autoincrement())
   process_id Int
   service_id Int
+  deleted_at DateTime? @db.Timestamp(6)
   processes  processes @relation(fields: [process_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   services   services  @relation(fields: [service_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -89,6 +97,7 @@ model process_worker {
   id         Int       @id @default(autoincrement())
   process_id Int
   worker_id  Int
+  deleted_at DateTime? @db.Timestamp(6)
   processes  processes @relation(fields: [process_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   workers    workers   @relation(fields: [worker_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -100,6 +109,7 @@ model processes {
   quantity        Int
   product_id      Int
   company_id      Int
+  deleted_at      DateTime?         @db.Timestamp(6)
   process_service process_service[]
   process_worker  process_worker[]
   companies       companies         @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -112,16 +122,18 @@ model product_material {
   product_id  Int
   material_id Int
   quantity    Int       @db.SmallInt
+  deleted_at  DateTime? @db.Timestamp(6)
   materials   materials @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products    products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model product_tag {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   product_id Int
   tag_id     Int
-  products   products @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  tags       tags     @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  deleted_at DateTime? @db.Timestamp(6)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tags       tags      @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -133,6 +145,7 @@ model products {
   profit_margin    Decimal            @db.Decimal
   product_img      String?            @db.VarChar(255)
   company_id       Int
+  deleted_at       DateTime?          @db.Timestamp(6)
   processes        processes[]
   product_material product_material[]
   product_tag      product_tag[]
@@ -143,12 +156,13 @@ model products {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model ratings {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   user_id    Int
   product_id Int
-  stars      Int      @db.SmallInt
-  products   products @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stars      Int       @db.SmallInt
+  deleted_at DateTime? @db.Timestamp(6)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -156,34 +170,38 @@ model services {
   id              Int               @id @default(autoincrement())
   name            String            @db.VarChar(255)
   cost            Decimal           @db.Decimal
+  deleted_at      DateTime?         @db.Timestamp(6)
   process_service process_service[]
 }
 
 model tags {
   id           Int            @id @default(autoincrement())
   name         String         @db.VarChar(255)
+  deleted_at   DateTime?      @db.Timestamp(6)
   material_tag material_tag[]
   product_tag  product_tag[]
 }
 
 model users {
-  id        Int        @id @default(autoincrement())
-  email     String     @db.VarChar(255)
-  password  String     @db.VarChar(255)
-  is_owner  Boolean?   @default(false)
-  comments  comments[]
-  companies companies?
-  likes     likes[]
-  ratings   ratings[]
-  wishlist  wishlist[]
+  id         Int        @id @default(autoincrement())
+  email      String     @db.VarChar(255)
+  password   String     @db.VarChar(255)
+  is_owner   Boolean?   @default(false)
+  deleted_at DateTime?  @db.Timestamp(6)
+  comments   comments[]
+  companies  companies?
+  likes      likes[]
+  ratings    ratings[]
+  wishlist   wishlist[]
 }
 
 model wishlist {
-  id         Int      @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   user_id    Int
   product_id Int
-  products   products @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users      users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  deleted_at DateTime? @db.Timestamp(6)
+  products   products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -193,6 +211,7 @@ model workers {
   lastname       String           @db.VarChar(255)
   hourly_fee     Decimal          @db.Decimal
   department_id  Int
+  deleted_at     DateTime?        @db.Timestamp(6)
   process_worker process_worker[]
   departments    departments      @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
