@@ -1,5 +1,3 @@
-import React from 'react';
-
 const MarketplacePage = () => {
   return (
     <div className="p-6">

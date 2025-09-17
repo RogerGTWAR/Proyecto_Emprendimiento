@@ -1,13 +1,21 @@
 import React from 'react';
 
-const Button = ({ children, variant = 'primary', className = '', loading = false, ...props }) => {
+const Button = ({ 
+  children, 
+  variant = 'primary', 
+  className = '', 
+  loading = false, 
+  ...props 
+}) => {
   const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variants = {
     primary: 'bg-[#209E7F] hover:bg-[#32C3A2] text-white focus:ring-[#32C3A2]',
     secondary: 'bg-[#D1D5DB] hover:bg-[#c2c7cd] text-[#1E1E1E] focus:ring-[#c2c7cd]',
     outline: 'border border-[#209E7F] text-[#209E7F] hover:bg-[#209E7F] hover:text-white focus:ring-[#209E7F]',
-    social: 'bg-white border border-[#D1D5DB] text-[#4B5563] hover:bg-[#F5F7FA] focus:ring-[#3B6DB3]'
+    social: 'bg-white border border-[#D1D5DB] text-[#4B5563] hover:bg-[#F5F7FA] focus:ring-[#3B6DB3]',
+    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
+    blue: 'bg-[#3B6DB3] hover:bg-[#2D4E7A] text-white focus:ring-[#2D4E7A'
   };
   
   return (

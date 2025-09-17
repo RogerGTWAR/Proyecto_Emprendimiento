@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { useNavbarStore } from '../../store/navbarStore';
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { isMenuOpen, toggleMenu, closeMenu } = useNavbarStore();
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
-          <Link to="/" className="flex-shrink-0 flex items-center">
+          <Link to="/" className="flex-shrink-0 flex items-center" onClick={closeMenu}>
             <img src="/Logo.png" alt="MateriaLab" className="h-8 w-auto mr-2" />
             <span className="text-2xl font-bold text-[#111A3B]">MateriaLab</span>
           </Link>
@@ -18,27 +19,28 @@ const Navbar = () => {
             <Link
               to="/"
               className="text-gray-700 hover:text-[#209E7F] font-medium transition-colors duration-200"
+              onClick={closeMenu}
             >
               Inicio
             </Link>
             <Link
               to="#"
               className="text-gray-700 hover:text-[#209E7F] font-medium transition-colors duration-200"
-              onClick={(e) => e.preventDefault()}
+              onClick={(e) => { e.preventDefault(); closeMenu(); }}
             >
-              Servicios
+              Marketplace
             </Link>
             <Link
               to="#"
               className="text-gray-700 hover:text-[#209E7F] font-medium transition-colors duration-200"
-              onClick={(e) => e.preventDefault()}
+              onClick={(e) => { e.preventDefault(); closeMenu(); }}
             >
               Recursos
             </Link>
             <Link
               to="#"
               className="text-gray-700 hover:text-[#209E7F] font-medium transition-colors duration-200"
-              onClick={(e) => e.preventDefault()}
+              onClick={(e) => { e.preventDefault(); closeMenu(); }}
             >
               Nosotros
             </Link>
@@ -46,10 +48,18 @@ const Navbar = () => {
             <div className="w-px h-6 bg-gray-300"></div>
 
             <div className="flex items-center space-x-4">
-              <Link to="/login" className="text-[#111A3B] hover:text-[#209E7F] font-medium transition-colors duration-200">
+              <Link 
+                to="/login" 
+                className="text-[#111A3B] hover:text-[#209E7F] font-medium transition-colors duration-200"
+                onClick={closeMenu}
+              >
                 Iniciar Sesión
               </Link>
-              <Link to="/register" className="bg-[#209E7F] hover:bg-[#32C3A2] text-white px-5 py-2 rounded-lg font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
+              <Link 
+                to="/register" 
+                className="bg-[#209E7F] hover:bg-[#32C3A2] text-white px-5 py-2 rounded-lg font-medium transition-colors duration-200 shadow-md hover:shadow-lg"
+                onClick={closeMenu}
+              >
                 Registrarse
               </Link>
             </div>
@@ -57,7 +67,7 @@ const Navbar = () => {
 
           <div className="md:hidden">
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={toggleMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-[#209E7F] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#209E7F]"
             >
               <span className="sr-only">Open main menu</span>
@@ -80,28 +90,28 @@ const Navbar = () => {
               <Link
                 to="/"
                 className="block px-3 py-2 text-gray-700 hover:text-[#209E7F] font-medium"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={closeMenu}
               >
                 Inicio
               </Link>
               <Link
                 to="#"
                 className="block px-3 py-2 text-gray-700 hover:text-[#209E7F] font-medium"
-                onClick={(e) => { e.preventDefault(); setIsMenuOpen(false); }}
+                onClick={(e) => { e.preventDefault(); closeMenu(); }}
               >
-                Servicios
+                Marketplace
               </Link>
               <Link
                 to="#"
                 className="block px-3 py-2 text-gray-700 hover:text-[#209E7F] font-medium"
-                onClick={(e) => { e.preventDefault(); setIsMenuOpen(false); }}
+                onClick={(e) => { e.preventDefault(); closeMenu(); }}
               >
                 Recursos
               </Link>
               <Link
                 to="#"
                 className="block px-3 py-2 text-gray-700 hover:text-[#209E7F] font-medium"
-                onClick={(e) => { e.preventDefault(); setIsMenuOpen(false); }}
+                onClick={(e) => { e.preventDefault(); closeMenu(); }}
               >
                 Nosotros
               </Link>
@@ -110,14 +120,14 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   className="block px-3 py-2 text-[#111A3B] hover:text-[#209E7F] font-medium"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                 >
                   Iniciar Sesión
                 </Link>
                 <Link
                   to="/register"
                   className="block px-3 py-2 bg-[#209E7F] hover:bg-[#32C3A2] text-white rounded-lg mt-2 font-medium text-center transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                 >
                   Registrarse
                 </Link>
