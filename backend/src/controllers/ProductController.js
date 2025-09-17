@@ -1,5 +1,7 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../database.js";
+import TagController from "./TagController.js";
+import MaterialController from "./MaterialController.js";
 
 export default class ProductController {
 
@@ -75,7 +77,8 @@ export default class ProductController {
       profit_margin,
       product_img,
       company_id,
-      materials
+      materials,
+      tags
     } = req.body;
 
     const companyId = parseInt(company_id);
@@ -108,13 +111,21 @@ export default class ProductController {
       });
 
       if (materials && materials.length > 0) {
-        await prisma.product_material.createMany({
-          data: materials.map(({ materialId, quantity }) => ({
-            product_id: product.id,
-            material_id: materialId,
-            quantity
-          })),
-        });
+        if (!await MaterialController.attachMaterialsToProduct(materials, product.id)) {
+          return res.status(400).json({
+            ok: false,
+            msg: "Los materiales especificados son invalidos"
+          })
+        }
+      }
+
+      if (tags && tags.length > 0) {
+        if (!await TagController.attachTagsToItem(tags, product.id, 'product')) {
+          res.status(400).json({
+            ok: false,
+            msg: "Las tags especificadas son invalidas"
+          })
+        }
       }
 
       res.status(201).json({
@@ -140,7 +151,8 @@ export default class ProductController {
       estimated_time,
       profit_margin,
       product_img,
-      materials
+      materials,
+      tags
     } = req.body;
 
     const productId = parseInt(id);
@@ -183,28 +195,31 @@ export default class ProductController {
         }
       })).map(pt => pt.material_id);
 
-      const newMaterials = materials.map(mt => mt.materialId);
+      const pastTags = (await prisma.product_tag.findMany({
+        where: {
+          product_id: oldProduct.id
+        }
+      })).map(pt => pt.tag_id);
+
+      const newMaterials = materials.map(mt => mt.id);
 
       if (materials) {
 
-        const materialsToAdd = materials.map(({ materialId, quantity }) => {
+        const materialsToAdd = materials.map(mt => {
 
-          if (!pastMaterials.includes(materialId)) {
-
-            const product_material = {
-              product_id: product.id,
-              material_id: materialId,
-              quantity
-            };
-
-            return product_material;
+          if (!pastMaterials.includes(mt.id)) {
+            return mt;
           }
+
         }).filter(mt => mt !== null && mt !== undefined)
 
         if (materialsToAdd.length > 0) {
-          await prisma.product_material.createMany({
-            data: materialsToAdd,
-          })
+          if (!await MaterialController.attachMaterialsToProduct(materialsToAdd, product.id)) {
+            return res.status(400).json({
+              ok: false,
+              msg: "Materiales especificados invalidos"
+            });
+          }
         };
 
         await prisma.product_material.deleteMany({
@@ -223,6 +238,42 @@ export default class ProductController {
         });
 
       }
+
+      if (tags) {
+
+        const tagsToAdd = tags.map(tagId => {
+
+          if (!pastTags.includes(tagId)) {
+            return tagId;
+          }
+
+        }).filter(mt => mt !== null && mt !== undefined)
+
+        if (tagsToAdd.length > 0) {
+          if (!await TagController.attachTagsToItem(tagsToAdd, product.id, 'product')) {
+            return res.status(400).json({
+              ok: false,
+              msg: "Tags especificadas invalidas"
+            });
+          }
+        };
+
+        await prisma.product_tag.deleteMany({
+          where: {
+            AND: [
+              { product_id: oldProduct.id },
+              {
+                tag_id: {
+                  in: pastTags.filter(tagId => {
+                    return !tags.includes(tagId);
+                  })
+                }
+              }
+            ]
+          }
+        });
+      }
+
       res.json({
         ok: true,
         msg: "Producto actualizado correctamente",

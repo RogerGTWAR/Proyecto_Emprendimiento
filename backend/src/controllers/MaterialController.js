@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
 import prisma from "../database.js";
+import TagController from "./TagController.js";
 
 export default class MaterialController {
 
@@ -76,7 +76,8 @@ export default class MaterialController {
       company_id,
       unit_cost,
       material_unit_id,
-      material_img
+      material_img,
+      tags
     } = req.body;
 
     const companyId = parseInt(company_id);
@@ -125,6 +126,15 @@ export default class MaterialController {
         }
       });
 
+      if (tags && tags.length > 0) {
+        if (!await TagController.attachTagsToItem(tags, material.id, 'material')) {
+          res.status(400).json({
+            ok: false,
+            msg: "Las tags especificadas son invalidas"
+          })
+        }
+      }
+
       res.status(201).json({
         ok: true,
         msg: "Material creado correctamente",
@@ -148,7 +158,8 @@ export default class MaterialController {
       waste_percentage,
       unit_cost,
       material_unit_id,
-      material_img
+      material_img,
+      tags
     } = req.body;
 
     const materialId = parseInt(id);
@@ -204,6 +215,47 @@ export default class MaterialController {
           }
         },
       );
+
+      const pastTags = (await prisma.material_tag.findMany({
+        where: {
+          material_id: oldMaterial.id
+        }
+      })).map(mt => mt.tag_id);
+
+
+      if (tags) {
+        const tagsToAdd = tags.map(tagId => {
+
+          if (!pastTags.includes(tagId)) {
+            return tagId;
+          }
+
+        }).filter(mt => mt !== null && mt !== undefined)
+
+        if (tagsToAdd.length > 0) {
+          if (!await TagController.attachTagsToItem(tagsToAdd, material.id, 'material')) {
+            return res.status(400).json({
+              ok: false,
+              msg: "Tags especificadas invalidas"
+            });
+          }
+        };
+
+        await prisma.material_tag.deleteMany({
+          where: {
+            AND: [
+              { material_id: oldMaterial.id },
+              {
+                tag_id: {
+                  in: pastTags.filter(tagId => {
+                    return !tags.includes(tagId);
+                  })
+                }
+              }
+            ]
+          }
+        });
+      }
 
       res.json({
         ok: true,
@@ -262,6 +314,46 @@ export default class MaterialController {
       });
     }
 
+  }
+
+  static async attachMaterialsToProduct(materials, productId) {
+
+    const realMaterials = await prisma.materials.findMany({
+      where: {
+        id: {
+          in: materials.map(mt => mt.id)
+        }
+      }
+    });
+
+    if (realMaterials.length < 1) {
+      return false;
+    }
+
+    const materialsToAdd = realMaterials.map(({ id }) => {
+
+      const material = materials.find((mt) => mt.id === id);
+
+      if (material) {
+        return {
+          product_id: productId,
+          material_id: material.id,
+          quantity: material.quantity
+        }
+      }
+    });
+
+    try {
+
+      await prisma.product_material.createMany({
+        data: materialsToAdd
+      })
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   }
 }
 
