@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useSidebarStore } from '../../store/sidebarStore';
 
 const DashboardLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHoveringLogo, setIsHoveringLogo] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  const { 
+    isCollapsed, 
+    isSidebarOpen, 
+    toggleCollapse, 
+    toggleSidebar, 
+    closeSidebar 
+  } = useSidebarStore();
 
   const handleLogout = () => {
     navigate('/login');
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
   useEffect(() => {
-    setIsSidebarOpen(false);
-  }, [location.pathname]);
+    closeSidebar();
+  }, [location.pathname, closeSidebar]);
 
-  const menuItems = [
+   const menuItems = [
     { 
       name: 'Dashboard', 
       icon: (
@@ -89,16 +88,17 @@ const DashboardLayout = () => {
       path: '/dashboard/company' 
     },
   ];
-
   return (
     <div className="flex h-screen bg-[#F5F7FA]">
+      {/* Overlay para móvil */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={closeSidebar}
         ></div>
       )}
 
+      {/* Sidebar */}
       <aside className={`fixed md:relative z-40 flex flex-col ${isCollapsed ? 'w-16' : 'w-64'} bg-white text-[#1E1E1E] transform transition-all duration-300 ease-in-out h-full ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} shadow-lg md:shadow-none border-r border-[#D1D5DB]`}>
         <div className="flex items-center justify-between p-4 border-b border-[#D1D5DB]">
           {!isCollapsed ? (
@@ -127,14 +127,19 @@ const DashboardLayout = () => {
                   </svg>
                 </button>
               ) : (
-                <div className="h-8 w-8 bg-[#209E7F] rounded-md flex items-center justify-center text-white font-bold">ML</div>
+                <img 
+                  src="/Logo.png" 
+                  alt="MateriaLab Logo" 
+                  className="h-8 w-8 object-contain cursor-pointer"
+                  onMouseEnter={() => setIsHoveringLogo(true)}
+                />
               )}
             </div>
           )}
           
           <button 
             className="md:hidden p-1 rounded-md text-[#4B5563] hover:bg-[#F5F7FA]"
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={closeSidebar}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -154,6 +159,7 @@ const DashboardLayout = () => {
                       : 'text-[#4B5563] hover:text-[#209E7F] hover:bg-[#F5F7FA]'
                   }`}
                   title={isCollapsed ? item.name : ''}
+                  onClick={closeSidebar}
                 >
                   <span className={`w-6 h-6 ${location.pathname === item.path ? 'text-white' : ''}`}>
                     {item.icon}
