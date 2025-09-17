@@ -18,7 +18,6 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
   const [previewUrl, setPreviewUrl] = useState('');
   const [focusedField, setFocusedField] = useState(null);
 
-  // Cargar datos iniciales si estamos en modo edición
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -61,7 +60,6 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
         imagen: file
       });
 
-      // Crear preview de la imagen
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result);
@@ -85,7 +83,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[100vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
 
         <div className="flex items-center justify-between p-4 border-b border-[#D1D5DB]">
           <h2 className="text-xl font-semibold text-[#1E1E1E]">
@@ -94,39 +92,41 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
           <CloseButton onClick={onClose} />
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <Input
-            label="Nombre del Material"
-            name="nombre"
-            type="text"
-            required
-            value={formData.nombre}
-            onChange={handleChange}
-            onFocus={() => handleFocus('nombre')}
-            onBlur={handleBlur}
-            placeholder="Ej: Madera de pino"
-            className="text-base"
-          />
-
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-[#1E1E1E]">
-              Tipo
-            </label>
-            <select
-              name="tipo"
-              value={formData.tipo}
-              onChange={handleChange}
-              onFocus={() => handleFocus('tipo')}
-              onBlur={handleBlur}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duration-200 text-[#4B5563]"
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-3">
+            <Input
+              label="Nombre del Material"
+              name="nombre"
+              type="text"
               required
-            >
-              <option value="">Seleccionar tipo</option>
-              <option value="madera">Madera</option>
-              <option value="textil">Textil</option>
-              <option value="cuero">Cuero</option>
-              <option value="alimento">Alimento</option>
-            </select>
+              value={formData.nombre}
+              onChange={handleChange}
+              onFocus={() => handleFocus('nombre')}
+              onBlur={handleBlur}
+              placeholder="Ej: Madera de pino"
+              className="text-base"
+            />
+
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-[#1E1E1E]">
+                Tipo
+              </label>
+              <select
+                name="tipo"
+                value={formData.tipo}
+                onChange={handleChange}
+                onFocus={() => handleFocus('tipo')}
+                onBlur={handleBlur}
+                className="w-full px-3 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duration-200 text-[#4B5563]"
+                required
+              >
+                <option value="">Seleccionar tipo</option>
+                <option value="madera">Madera</option>
+                <option value="textil">Textil</option>
+                <option value="cuero">Cuero</option>
+                <option value="alimento">Alimento</option>
+              </select>
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -135,7 +135,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             </label>
             <textarea
               name="descripcion"
-              rows={3}
+              rows={4}
               value={formData.descripcion}
               onChange={handleChange}
               onFocus={() => handleFocus('descripcion')}
@@ -145,7 +145,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <Input
               label="Cantidad"
               name="cantidad"
@@ -170,7 +170,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
                 onChange={handleChange}
                 onFocus={() => handleFocus('tamaño')}
                 onBlur={handleBlur}
-                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duration-200 text-[#4B5563]"
+                className="w-full px-3 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duration-200 text-[#4B5563]"
               >
                 <option value="">Seleccionar tamaño</option>
                 <option value="pequeño">Pequeño</option>
@@ -180,32 +180,34 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             </div>
           </div>
 
-          <Input
-            label="Medidas"
-            name="medidas"
-            type="text"
-            value={formData.medidas}
-            onChange={handleChange}
-            onFocus={() => handleFocus('medidas')}
-            onBlur={handleBlur}
-            placeholder="Ej: 10x20x5 cm"
-            className="text-base"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Costo"
+              name="costo"
+              type="number"
+              step="0.01"
+              required
+              value={formData.costo}
+              onChange={handleChange}
+              onFocus={() => handleFocus('costo')}
+              onBlur={handleBlur}
+              placeholder="0.00"
+              min="0"
+              className="text-base"
+            />
 
-          <Input
-            label="Costo"
-            name="costo"
-            type="number"
-            step="0.01"
-            required
-            value={formData.costo}
-            onChange={handleChange}
-            onFocus={() => handleFocus('costo')}
-            onBlur={handleBlur}
-            placeholder="0.00"
-            min="0"
-            className="text-base"
-          />
+            <Input
+              label="Medidas"
+              name="medidas"
+              type="text"
+              value={formData.medidas}
+              onChange={handleChange}
+              onFocus={() => handleFocus('medidas')}
+              onBlur={handleBlur}
+              placeholder="Ej: 10x20x5 cm"
+              className="text-base"
+            />
+          </div>
 
           <div className="space-y-2">
             <label className="block text-sm font-medium text-[#1E1E1E]">
@@ -255,7 +257,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             )}
           </div>
 
-          <div className="flex space-x-3 pt-6">
+          <div className="flex space-x-3 pt-4">
             <Button type="button" variant="secondary" onClick={onClose} className="flex-1 py-2.5">
               Cancelar
             </Button>
