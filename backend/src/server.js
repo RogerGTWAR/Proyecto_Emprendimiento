@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+
 import materialRouter from './routes/materialRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import tagRouter from "./routes/tagRoutes.js";
@@ -7,7 +9,11 @@ import userRouter from './routes/userRoutes.js';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+app.use(cookieParser());
 app.use(express.json());
 
 app.use('/api/materials', materialRouter);

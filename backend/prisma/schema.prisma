@@ -183,16 +183,17 @@ model tags {
 }
 
 model users {
-  id         Int        @id @default(autoincrement())
-  email      String     @db.VarChar(255)
-  password   String     @db.VarChar(255)
-  is_owner   Boolean?   @default(false)
-  deleted_at DateTime?  @db.Timestamp(6)
-  comments   comments[]
-  companies  companies?
-  likes      likes[]
-  ratings    ratings[]
-  wishlist   wishlist[]
+  id           Int        @id @default(autoincrement())
+  email        String     @unique @db.VarChar(255)
+  password     String?    @db.VarChar(255)
+  is_owner     Boolean?   @default(false)
+  google_oauth Boolean?   @default(false)
+  deleted_at   DateTime?  @db.Timestamp(6)
+  comments     comments[]
+  companies    companies?
+  likes        likes[]
+  ratings      ratings[]
+  wishlist     wishlist[]
 }
 
 model wishlist {
