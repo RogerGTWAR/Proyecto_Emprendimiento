@@ -1,8 +1,8 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import Button from '../components/ui/Button';
 import IconButton from '../components/ui/Buscador';
-import ProductsCard from '../components/productss/ProductsCard';
-import ProductsDetails from '../components/productss/ProductsDetails';
+import ProductsCard from '../components/products/ProductsCard';
+import ProductsDetails from '../components/products/ProductsDetails';
 import { productsPrueba } from '../data/productsData';
 
 const ProductsPage = () => {
@@ -31,7 +31,7 @@ const ProductsPage = () => {
     setVistaDetalle(false);
     setproductsSeleccionado(null);
   };
-  
+
   // Ver detalles
   const verDetalles = (products) => {
     setproductsSeleccionado(products);
@@ -54,7 +54,7 @@ const ProductsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Mis Productos</h1>
@@ -62,7 +62,7 @@ const ProductsPage = () => {
           </div>
         </div>
 
-        
+
         <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
             <div className="flex-1">
@@ -76,11 +76,11 @@ const ProductsPage = () => {
               />
               <IconButton onClick={handleSearch} aria-label="Buscar" />
             </div>
-            
+
           </div>
         </div>
 
-        {/* Grid de products */} 
+        {/* Grid de products */}
         {products.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
@@ -104,7 +104,7 @@ const ProductsPage = () => {
                 >
                   Anterior
                 </button>
-                
+
                 {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(numero => (
                   <button
                     key={numero}
@@ -114,7 +114,7 @@ const ProductsPage = () => {
                     {numero}
                   </button>
                 ))}
-                
+
                 <button
                   onClick={() => cambiarPagina(paginaActual + 1)}
                   disabled={paginaActual === totalPaginas}

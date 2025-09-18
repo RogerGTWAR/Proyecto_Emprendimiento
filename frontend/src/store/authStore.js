@@ -48,5 +48,29 @@ export const useAuthStore = create((set, get) => ({
 
   oauth: async () => {
     window.location.href = "http://localhost:3000/api/users/register/google";
+  },
+
+  verifyUser: async () => {
+    const resp = await fetch("http://localhost:3000/api/users/is_auth", {
+      credentials: 'include'
+    });
+
+    const { ok, msg, userInfo } = await resp.json();
+
+    if (ok) {
+      localStorage.setItem('userInfo', JSON.stringify(userInfo));
+
+      if (window.location.href === "http://localhost:5173/login"
+        || window.location.href === "http://localhost:5173/register"
+      ) {
+        window.location.href = "http://localhost:5173/dashboard";
+      }
+
+      return;
+    } else if (window.location.href !== "http://localhost:5173/login"
+      && window.location.href !== "http://localhost:5173/register"
+    ) {
+      window.location.href = "http://localhost:5173/login";
+    }
   }
 }));
