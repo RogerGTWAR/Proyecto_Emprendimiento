@@ -8,7 +8,7 @@ export const useAuthStore = create((set, get) => ({
     password: ''
   },
   loading: false,
-  
+
   setFormData: (name, value) => {
     set(state => ({
       formData: {
@@ -44,5 +44,9 @@ export const useAuthStore = create((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+
+  oauth: async () => {
+    window.location.href = "http://localhost:3000/api/users/register/google";
   }
 }));

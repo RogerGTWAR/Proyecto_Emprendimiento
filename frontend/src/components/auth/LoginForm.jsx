@@ -1,11 +1,11 @@
 import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-import { Link, useNavigate } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
-  const { formData, setFormData, loading, login } = useAuthStore();
-  const navigate = useNavigate(); 
+  const { formData, setFormData, loading, login, oauth } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,11 +24,11 @@ const LoginForm = () => {
           <div className="text-center lg:text-left">
             <h1 className="text-3xl font-bold mb-4">Bienvenido a MateriaLab</h1>
             <p className="text-lg opacity-90 mb-8">
-              Accede a tu cuenta para gestionar tu empresa artesanal y conectar con clientes 
+              Accede a tu cuenta para gestionar tu empresa artesanal y conectar con clientes
               que valoran productos auténticos y de calidad.
             </p>
           </div>
-          
+
           <div className="space-y-6">
             <div className="flex items-start">
               <div className="bg-white bg-opacity-20 p-2 rounded-full mr-4 flex-shrink-0">
@@ -41,7 +41,7 @@ const LoginForm = () => {
                 <p className="opacity-80 text-sm">Tus datos están protegidos con encriptación de última generación.</p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <div className="bg-white bg-opacity-20 p-2 rounded-full mr-4 flex-shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -53,7 +53,7 @@ const LoginForm = () => {
                 <p className="opacity-80 text-sm">Gestiona tus productos, pedidos y estadísticas desde un único lugar.</p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <div className="bg-white bg-opacity-20 p-2 rounded-full mr-4 flex-shrink-0">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -138,6 +138,17 @@ const LoginForm = () => {
                   Iniciar sesión
                 </Button>
               </form>
+
+              <Button
+                onClick={oauth}
+                type="button"
+                className='w-full bg-white border-[1px] border-gray-300 text-[#1e1e1e] hover:bg-transparent mt-2'
+              >
+                <div className='flex items-center justify-center gap-x-3'>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533.5 544.3" width="24" height="24"><path fill="#4285F4" d="M533.5 278.4c0-17.3-1.5-34-4.3-50.3H272v95.1h146.9c-6.3 34.1-25.6 62.9-54.5 82v68.2h88.1c51.5-47.4 81-117.6 81-195z" /><path fill="#34A853" d="M272 544.3c73.3 0 134.8-24.2 179.7-65.7l-88.1-68.2c-24.5 16.5-55.9 26.2-91.6 26.2-70.6 0-130.5-47.6-152-111.3H31.5v69.6C76.3 479 167.5 544.3 272 544.3z" /><path fill="#FBBC05" d="M120 322.3c-10.5-31.5-10.5-65.6 0-97.1V155.6H31.5c-36.9 73.9-36.9 160.4 0 234.3l88.5-67.6z" /><path fill="#EA4335" d="M272 107.9c38.9 0 73.7 13.4 101.2 39.7l75.9-75.9C406.8 24.6 345.3 0 272 0 167.5 0 76.3 65.3 31.5 155.6l88.5 69.6c21.5-63.7 81.4-111.3 152-111.3z" /></svg>
+                  <span className='text-[#1e1e1e] '>Login con Google</span>
+                </div>
+              </Button>
 
               <div className="mt-6">
                 <div className="relative">
