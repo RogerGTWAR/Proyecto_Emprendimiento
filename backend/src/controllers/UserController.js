@@ -1,6 +1,9 @@
 import { OAuth2Client } from "google-auth-library";
 import prisma from "../database.js";
 import JWT from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import Mailer from "../utils/Mailer.js";
+
 const { AuthorizationCode } = await import("simple-oauth2");
 
 const client = new AuthorizationCode({
@@ -20,7 +23,184 @@ const redirectUri = 'http://localhost:3000/api/users/register/oauth';
 export default class UserController {
 
   static async register(req, res) {
-    res.json(req.body);
+
+    const {
+      company_name,
+      company_type,
+      email,
+      password
+    } = req.body;
+
+    const saltRounds = 10;
+
+    try {
+      const hashedPass = await bcrypt.hash(password, saltRounds);
+
+      const user = await prisma.users.findUnique({
+        where: {
+          email
+        }
+      });
+
+      if (user) {
+        return res.status(400).json({
+          ok: false,
+          msg: "Ya existe una cuenta con dichas credenciales"
+        });
+      }
+
+      const newUser = await prisma.users.create({
+        data: {
+          email,
+          password: hashedPass,
+          is_owner: true
+        }
+      });
+
+      await prisma.companies.create({
+        data: {
+          name: company_name,
+          type: company_type,
+          user_id: newUser.id
+        }
+      });
+
+      const jwt = JWT.sign({
+        userId: newUser.id
+      }, process.env.JWT_SECRET_KEY, {
+        expiresIn: '1d'
+      });
+
+      if (!await Mailer.sendVerifyEmailMail(jwt, newUser.email)) {
+        return res.status(500).json({
+          ok: false,
+          msg: "Hubo un error al enviar el correo de verificacion"
+        });
+      };
+
+      return res.json({
+        ok: true,
+        msg: "Se ha mandado un correo con instrucciones a tu email"
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        ok: false,
+        msg: "Something went wrong"
+      });
+    }
+
+  }
+
+  static async verifyMail(req, res) {
+
+    const { token } = req.query;
+
+    const payload = JWT.verify(token, process.env.JWT_SECRET_KEY);
+
+    if (!payload) {
+      return res.status(401).json({
+        ok: false,
+        msg: "Token invalido o expirado"
+      });
+    }
+
+    try {
+
+      const user = await prisma.users.findUnique({
+        where: {
+          id: payload.userId
+        }
+      });
+
+      if (!user) {
+        return res.json({
+          ok: false,
+          msg: "No se encontro el usuario a verificar"
+        });
+      }
+
+      if (user.is_verified) {
+        return res.json({
+          ok: true,
+          msg: "Tu cuenta ya estaba verificada"
+        });
+      }
+
+      await prisma.users.update({
+        where: {
+          id: user.id
+        },
+        data: {
+          is_verified: true
+        }
+      });
+
+      return res.json({
+        ok: true,
+        msg: "Se ha verificado tu cuenta"
+      });
+
+    } catch (error) {
+      return res.status(500).json({
+        ok: false,
+        msg: "Something went wrong"
+      });
+    }
+  }
+
+  static async login(req, res) {
+
+    const { email, password } = req.body;
+
+    try {
+      const user = await prisma.users.findUnique({
+        where: {
+          email
+        }
+      });
+
+      if (!user) {
+        return res.status(401).json({
+          ok: false,
+          msg: "Usuario no encontrado"
+        });
+      }
+
+      if (!user.is_verified) {
+        return res.status(401).json({
+          ok: false,
+          msg: "Usuario no verificado"
+        });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        return res.status(401).json({
+          ok: false,
+          msg: "Crontaseña incorrecta"
+        });
+      }
+
+      const jwt = JWT.sign({
+        userId: user.id,
+        is_owner: user.is_owner
+      }, process.env.JWT_SECRET_KEY, {
+        expiresIn: '1d'
+      });
+
+      res.cookie('token', jwt, { httpOnly: true, secure: true });
+      res.json({
+        ok: true,
+        msg: "Usuario autenticado correctamente"
+      });
+    } catch (error) {
+      res.status(500).json({
+        ok: false,
+        msg: "Something went wrong"
+      });
+    }
   }
 
   static async oauthGoogle(req, res) {
@@ -78,7 +258,8 @@ export default class UserController {
         const newUser = await prisma.users.create({
           data: {
             email,
-            google_oauth: true
+            google_oauth: true,
+            is_verified: true
           }
         });
 
@@ -100,17 +281,17 @@ export default class UserController {
           });
       }
       res.cookie('token', jwt, { httpOnly: true, secure: true });
-      res.redirect("http://localhost:5173/dashboard");
+      res.json({
+        ok: true,
+        msg: "Usuario autenticado correctamente"
+      });
     } catch (error) {
       res.cookie('error', "Error de autenticacion", { httpOnly: true, secure: true });
-      res.redirect("http://localhost:5173/login");
+      res.json({
+        ok: false,
+        msg: "Ocurrio un error al autenticar al usuario"
+      });
     }
-
-  }
-
-  static async login(req, res) {
-
-    res.json(req.body);
 
   }
 

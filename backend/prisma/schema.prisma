@@ -188,6 +188,7 @@ model users {
   password     String?    @db.VarChar(255)
   is_owner     Boolean?   @default(false)
   google_oauth Boolean?   @default(false)
+  is_verified  Boolean?   @default(false)
   deleted_at   DateTime?  @db.Timestamp(6)
   comments     comments[]
   companies    companies?
