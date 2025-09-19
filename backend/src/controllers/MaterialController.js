@@ -6,15 +6,36 @@ export default class MaterialController {
   static async getAll(req, res) {
 
     try {
-      const materials = await prisma.materials.findMany({
-        where: { deleted_at: null }
+      let materials = await prisma.materials.findMany({
+        where: { deleted_at: null },
+        include: {
+          material_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+          material_units: {
+            select: { unit_name: true }
+          }
+        }
       });
+
+      materials = materials.map(mt => {
+        return {
+          ...mt,
+          material_tag: mt.material_tag.map(m_t => m_t.tags.name),
+          material_units: mt.material_units.unit_name
+        };
+      })
 
       res.json({
         ok: true,
         data: materials
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         ok: false,
         msg: "Server error, something went wrong"
@@ -43,6 +64,18 @@ export default class MaterialController {
       material = await prisma.materials.findFirst({
         where: {
           AND: [{ id: materialId }, { deleted_at: null }]
+        },
+        include: {
+          material_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+          material_units: {
+            select: { unit_name: true }
+          }
         }
       });
 
@@ -60,6 +93,12 @@ export default class MaterialController {
         msg: `No se encontro el material con id: ${materialId}`
       })
     }
+
+    material = {
+      ...material,
+      material_tag: material.material_tag.map(m_t => m_t.tags.name),
+      material_units: material.material_units.unit_name
+    };
 
     res.json({
       ok: true,
@@ -114,7 +153,7 @@ export default class MaterialController {
 
     try {
 
-      const material = await prisma.materials.create({
+      let material = await prisma.materials.create({
         data: {
           name,
           description,
@@ -134,6 +173,30 @@ export default class MaterialController {
           })
         }
       }
+
+      material = await prisma.materials.findUnique({
+        where: {
+          id: material.id
+        },
+        include: {
+          material_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+          material_units: {
+            select: { unit_name: true }
+          }
+        }
+      });
+
+      material = {
+        ...material,
+        material_tag: material.material_tag.map(m_t => m_t.tags.name),
+        material_units: material.material_units.unit_name
+      };
 
       res.status(201).json({
         ok: true,
@@ -202,7 +265,7 @@ export default class MaterialController {
     }
 
     try {
-      const material = await prisma.materials.update(
+      let material = await prisma.materials.update(
         {
           where: { id: materialId },
           data: {
@@ -257,12 +320,35 @@ export default class MaterialController {
         });
       }
 
+      material = await prisma.materials.findUnique({
+        where: {
+          id: material.id
+        },
+        include: {
+          material_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+          material_units: {
+            select: { unit_name: true }
+          }
+        }
+      });
+
+      material = {
+        ...material,
+        material_tag: material.material_tag.map(m_t => m_t.tags.name),
+        material_units: material.material_units.unit_name
+      };
+
       res.json({
         ok: true,
         msg: "Material actualizado correctamente",
         data: material
       });
-
     } catch (error) {
       res.status(500).json({
         ok: false,

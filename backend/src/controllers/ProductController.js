@@ -8,8 +8,24 @@ export default class ProductController {
   static async getAll(req, res) {
 
     try {
-      const products = await prisma.products.findMany({
-        where: { deleted_at: null }
+      let products = await prisma.products.findMany({
+        where: { deleted_at: null },
+        include: {
+          product_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+        }
+      });
+
+      products = products.map(p => {
+        return {
+          ...p,
+          product_tag: p.product_tag.map(pt => pt.tags.name)
+        };
       });
 
       res.json({
@@ -45,10 +61,44 @@ export default class ProductController {
       product = await prisma.products.findFirst({
         where: {
           AND: [{ id: productId }, { deleted_at: null }]
+        },
+        include: {
+          product_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+          product_material: {
+            select: {
+              quantity: true,
+              materials: {
+                select: {
+                  name: true,
+                  material_img: true,
+                  unit_cost: true,
+                  waste_percentage: true,
+                  material_tag: {
+                    include: {
+                      tags: {
+                        select: { name: true }
+                      }
+                    }
+                  },
+                  material_units: {
+                    select: { unit_name: true }
+                  },
+                },
+              }
+            }
+          }
+
         }
       });
 
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         ok: false,
         msg: "Server Error, something went wrong"
@@ -61,6 +111,21 @@ export default class ProductController {
         msg: `No se encontro el producto con id: ${productId}`
       })
     }
+
+    product = {
+      ...product,
+      product_tag: product.product_tag.map(pt => pt.tags.name),
+      product_material: product.product_material.map(pm => {
+
+        const { materials } = pm;
+
+        return {
+          ...materials,
+          material_tag: materials.material_tag.map(mt => mt.tags.name),
+          material_units: materials.material_units.unit_name
+        }
+      })
+    };
 
     res.json({
       ok: true,
@@ -99,7 +164,7 @@ export default class ProductController {
 
     try {
 
-      const product = await prisma.products.create({
+      let product = await prisma.products.create({
         data: {
           name,
           description,
@@ -127,6 +192,61 @@ export default class ProductController {
           })
         }
       }
+
+      product = await prisma.products.findFirst({
+        where: {
+          AND: [{ id: product.id }, { deleted_at: null }]
+        },
+        include: {
+          product_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+          product_material: {
+            select: {
+              quantity: true,
+              materials: {
+                select: {
+                  name: true,
+                  material_img: true,
+                  unit_cost: true,
+                  waste_percentage: true,
+                  material_tag: {
+                    include: {
+                      tags: {
+                        select: { name: true }
+                      }
+                    }
+                  },
+                  material_units: {
+                    select: { unit_name: true }
+                  },
+                },
+              }
+            }
+          }
+
+        }
+      });
+
+
+      product = {
+        ...product,
+        product_tag: product.product_tag.map(pt => pt.tags.name),
+        product_material: product.product_material.map(pm => {
+
+          const { materials } = pm;
+
+          return {
+            ...materials,
+            material_tag: pm.materials.material_tag.map(mt => mt.tags.name),
+            material_units: pm.materials.material_units.unit_name
+          }
+        })
+      };
 
       res.status(201).json({
         ok: true,
@@ -273,6 +393,60 @@ export default class ProductController {
           }
         });
       }
+
+      product = await prisma.products.findFirst({
+        where: {
+          AND: [{ id: product.id }, { deleted_at: null }]
+        },
+        include: {
+          product_tag: {
+            include: {
+              tags: {
+                select: { name: true }
+              }
+            }
+          },
+          product_material: {
+            select: {
+              quantity: true,
+              materials: {
+                select: {
+                  name: true,
+                  material_img: true,
+                  unit_cost: true,
+                  waste_percentage: true,
+                  material_tag: {
+                    include: {
+                      tags: {
+                        select: { name: true }
+                      }
+                    }
+                  },
+                  material_units: {
+                    select: { unit_name: true }
+                  },
+                },
+              }
+            }
+          }
+
+        }
+      });
+
+
+      product = {
+        ...product,
+        product_tag: product.product_tag.map(pt => pt.tags.name),
+        product_material: product.product_material.map(pm => {
+          const { materials } = pm;
+
+          return {
+            ...materials,
+            material_tag: pm.materials.material_tag.map(mt => mt.tags.name),
+            material_units: pm.materials.material_units.unit_name
+          }
+        })
+      };
 
       res.json({
         ok: true,
