@@ -281,16 +281,10 @@ export default class UserController {
           });
       }
       res.cookie('token', jwt, { httpOnly: true, secure: true });
-      res.json({
-        ok: true,
-        msg: "Usuario autenticado correctamente"
-      });
+      res.redirect("http://localhost:5173/dashboard");
     } catch (error) {
       res.cookie('error', "Error de autenticacion", { httpOnly: true, secure: true });
-      res.json({
-        ok: false,
-        msg: "Ocurrio un error al autenticar al usuario"
-      });
+      res.redirect("http://localhost:5173/login");
     }
 
   }
