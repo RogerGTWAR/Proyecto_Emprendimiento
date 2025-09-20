@@ -63,7 +63,7 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
           <div className="space-y-4">
             <div>
               <h2 className="text-xl font-bold text-gray-800 mb-2">{material.nombre}</h2>
-              <span className="inline-block px-3 py-1 bg-teal-100 text-teal-800 text-sm font-medium rounded-full capitalize">
+              <span className="inline-block px-3 py-1 bg-yellow-100 text-teal-800 text-sm font-medium rounded-full capitalize">
                 {material.tipo}
               </span>
             </div>
@@ -119,7 +119,6 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
         </div>
       </div>
 
-      {/* Modal de confirmación */}
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={handleCancelDelete}

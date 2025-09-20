@@ -13,7 +13,7 @@ const MaterialCard = ({ material, onVerDetalles, formatearPrecio }) => {
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold text-gray-800 text-lg line-clamp-1">{material.nombre}</h3>
-          <span className="inline-block px-2 py-1 bg-teal-100 text-teal-800 text-xs font-medium rounded-full capitalize shrink-0 ml-2">
+          <span className="inline-block px-2 py-1 bg-yellow-100 text-green-800 text-xs font-medium rounded-full capitalize shrink-0 ml-2">
             {material.tipo}
           </span>
         </div>
