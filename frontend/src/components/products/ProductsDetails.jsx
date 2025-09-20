@@ -3,11 +3,11 @@ import CloseButton from "../ui/CloseButton";
 import ButtonIcon from '../ui/ButtonIcon'; 
 import DeleteConfirmationModal from '../ui/DeleteConfirmationModal';
 
-const ProductsDetails = ({ products, onCerrar, onEliminar, }) => {
+const ProductsDetails = ({ products: product, onCerrar, onEliminar }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  if (!products) return null;
+  if (!product) return null;
 
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
@@ -16,7 +16,8 @@ const ProductsDetails = ({ products, onCerrar, onEliminar, }) => {
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      await onEliminar(products.id);
+      // Aquí se espera que onEliminar cambie el estado del producto (ej: de 1 a 0)
+      await onEliminar(product.id);
       setShowDeleteModal(false);
     } catch (error) {
       console.error('Error al eliminar:', error);
@@ -47,47 +48,47 @@ const ProductsDetails = ({ products, onCerrar, onEliminar, }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           <div className="h-64">
+            <h3 className="font-semibold text-gray-800 text-lg line-clamp-1">{product.nombre}</h3>
             <img 
-              src={products.imagen} 
-              alt={products.nombre}
+              src={product.imagen} 
+              alt={product.nombre}
               className="w-full h-full object-cover rounded-lg"
             />
           </div>
           
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Tiempo Estimado: </h2>
-              <span className="inline-block px-3 py-1 bg-teal-100 text-teal-800 text-sm font-medium rounded-full capitalize">
-                {products.estimated_time}
-              </span>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Tiempo Estimado: {product.estimated_time} </h2>
             </div>
             
-            <div className="space-y-3">
-              <div className="max-h-32 overflow-y-auto">
+            <div className="space-y-3 max-h-32 overflow-y-auto">
                 <h3 className="text-sm font-medium text-gray-600 mb-1">Descripción</h3>
-                <p className="text-gray-800 whitespace-pre-wrap">{products.descripcion}</p>
-              </div>
+                <p className="text-gray-800 whitespace-pre-wrap">{product.description}</p>
+            </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600 mb-1">Margen de Ganancia: </h3>
-                  <p className="text-gray-800">{products.profit_margin}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600 mb-1">Materiales usados</h3>
-                    {products.materials && products.materials.length > 0 ? (
-                    <ul className="list-disc list-inside max-h-40 overflow-y-auto text-gray-800">
-                      {products.materials.map((mat, index) => (
-                    <li key={index}>
-                        {mat.material_name} - Cantidad: {mat.quantity}
-                      </li>
+            <div className="grid grid-cols-2 gap-4">
+                {product.materials && product.materials.length > 0 ? (
+                  <table className="w-auto text-left text-gray-600 border border-gray-300 rounded-lg overflow-hidden table-auto">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border-b border-gray-300 px-4 py-2 whitespace-nowrap">#</th>
+                        <th className="border-b border-gray-300 px-4 py-2 whitespace-nowrap">Materiales usados</th>
+                        <th className="border-b border-gray-300 px-4 py-2 whitespace-nowrap">Cantidad</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {product.materials.map((mat, index) => (
+                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <td className="px-4 border-b border-gray-300">{index + 1}</td>
+                          <td className="px-4 border-b border-gray-300">{mat.material_name}</td>
+                          <td className="px-4 border-b border-gray-300">{mat.quantity}</td>
+                        </tr>
                       ))}
-                    </ul>
-                  ) : (
+                    </tbody>
+                  </table>
+                ) : (
                   <p className="text-gray-600">No hay materiales asociados.</p>
-                  )}
-                </div>
-              </div>
+                )}
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -98,19 +99,19 @@ const ProductsDetails = ({ products, onCerrar, onEliminar, }) => {
                 iconPosition="left"
                 className="flex-1"
               >
-                Eliminar
+                Eliminar Producto
               </ButtonIcon>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Modal de confirmación */}
+      {/* Modal de confirmación para eliminar producto */}
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        itemName={products.nombre}
+        itemName={product.nombre}
         loading={isDeleting}
       />
     </>

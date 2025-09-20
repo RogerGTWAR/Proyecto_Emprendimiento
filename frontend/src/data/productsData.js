@@ -1,12 +1,13 @@
 export const productsPrueba = [
-    {
+{
         id: 1,
-        nombre: 'Casa de habitación 50m2',
+        nombre: 'Guantes de cuero',
         estimated_time: 720,
-        description: 'Construcción básica de vivienda',
+        description: 'Guantes de Cuero de uso industrial tamaño xl',
         profit_margin: 1,
         company_id: 1,
-        product_img: 'https://i.ytimg.com/vi/xvCmeHB3syA/sddefault.jpg',
+        imagen: 'https://www.shutterstock.com/image-vector/set-3d-industrial-protective-gloves-260nw-2313477659.jpg',
+        activo: 1,
         materials: [
         { material_name: "Material 1", quantity: 5 },
         { material_name: "Material 2", quantity: 3 },        
@@ -15,28 +16,30 @@ export const productsPrueba = [
     },
         {
         id: 2,
-        nombre: 'Estructura metálica ligera',
+        nombre: 'Sombrero vaquero',
         estimated_time: 300,
-        description: 'Estructura metálica para techos',
+        description: 'Sombrero de ala ancha estilo vaquero en color beige claro. ',
         profit_margin: 20,
         company_id: 2,
-        product_img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE2Z1DFtuKu17GjQ90-hno60J30OM-Hc88fA&s',
+        imagen: 'https://aungcrown.com/wp-content/uploads/2024/05/cap9.jpg',
+        activo: 1,
         materials: [
-        { material_name: "Material 1", quantity: 52 },
-        { material_name: "Material 2", quantity: 35 },
-        { material_name: "Material 3", quantity: 89 },      
-        { material_name: "Material 4", quantity: 54 }]
+        { material_name: "Tiras de Cuero", quantity: 52 },
+        { material_name: "Hilos", quantity: 35 }]
     },
     {
         id: 3,
-        nombre: 'Juego de comedor madera',
+        nombre: 'Comedor madera',
         estimated_time: 240,
-        description: 'Juego de comedor de 6 sillas',
+        description: 'Mesa de comedor estilo industrial vintage en color canyon (tono terroso).',
         profit_margin: 25,
         company_id: 3,
-        product_img: 'https://encrypted-tbn0..com/images?q=tbn:ANd9GcRjW2G4d9j5j0awnkq-s0RxBL1_0Hxz4kmmcQ&s',
+        imagen: 'https://www.kionadecoracion.com/218483-thickbox_default/mesa-de-comedor-merlin-de-estetica-vintage-industrial-color-canyon.jpg',
+        activo: 1,
         materials: [
-        { material_name: "Material 1", quantity: 5 },
-        { material_name: "Material 2", quantity: 3 }]
+        { material_name: "Tablas de madera", quantity: 3 },
+        { material_name: "Tornillos", quantity: 8 },
+        { material_name: "Barras de metal", quantity: 8 },
+        { material_name: "Pegamento", quantity: 1 }]
     }
 ];
