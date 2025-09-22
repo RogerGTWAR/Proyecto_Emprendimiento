@@ -44,14 +44,12 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
   return (
     <>
       <div className="p-6">
-
         <div className="flex justify-between items-center mb-6 relative">
           <h1 className="text-2xl font-bold text-gray-800">Detalles del Material</h1>
           <CloseButton onClick={onCerrar} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
           <div className="h-64">
             <img 
               src={material.imagen} 
@@ -93,29 +91,29 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
                 </div>
               </div>
             </div>
-            
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <ButtonIcon
-                variant="primary"
-                onClick={() => onEditar(material)}
-                icon={<EditIcon />}
-                iconPosition="left"
-                className="flex-1"
-              >
-                Editar Material
-              </ButtonIcon>
-              
-              <ButtonIcon
-                variant="secondary"
-                onClick={handleDeleteClick}
-                icon={<DeleteIcon />}
-                iconPosition="left"
-                className="flex-1"
-              >
-                Eliminar
-              </ButtonIcon>
-            </div>
           </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6">
+          <ButtonIcon
+            variant="primary"
+            onClick={() => onEditar(material)}
+            icon={<EditIcon />}
+            iconPosition="left"
+            className="flex-1"
+          >
+            Editar Material
+          </ButtonIcon>
+          
+          <ButtonIcon
+            variant="secondary"
+            onClick={handleDeleteClick}
+            icon={<DeleteIcon />}
+            iconPosition="left"
+            className="flex-1"
+          >
+            Eliminar
+          </ButtonIcon>
         </div>
       </div>
 

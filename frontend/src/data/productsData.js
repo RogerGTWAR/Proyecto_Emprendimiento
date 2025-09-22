@@ -41,5 +41,5 @@ export const productsPrueba = [
         { material_name: "Tornillos", quantity: 8 },
         { material_name: "Barras de metal", quantity: 8 },
         { material_name: "Pegamento", quantity: 1 }]
-    }
+    }  
 ];
