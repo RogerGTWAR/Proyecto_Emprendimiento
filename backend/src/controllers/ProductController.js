@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "../database.js";
 import TagController from "./TagController.js";
 import MaterialController from "./MaterialController.js";
+import crypto from "crypto";
 
 export default class ProductController {
 

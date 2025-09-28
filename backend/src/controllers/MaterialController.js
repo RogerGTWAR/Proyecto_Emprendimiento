@@ -2,7 +2,7 @@ import prisma from "../database.js";
 import TagController from "./TagController.js";
 import path from "path";
 import fs from "fs/promises";
-import cryto from "crypto";
+import crypto from "crypto";
 
 export default class MaterialController {
 
@@ -209,6 +209,7 @@ export default class MaterialController {
         material_tag: material.material_tag.map(m_t => m_t.tags.name),
         material_units: material.material_units.unit_name
       };
+        newName = crypto.randomUUID() + ext;
 
       res.status(201).json({
         ok: true,
