@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="frontend/public/Logo.png" width="400" height="400" alt="MateriaLab Logo">
+    <img src="frontend/public/Logo.png" width="200" height="200" alt="MateriaLab Logo">
     <br>
     <span style="color: #111A3B; font-size: 3rem; font-weight: 700;">MateriaLab</span>
 </p>
