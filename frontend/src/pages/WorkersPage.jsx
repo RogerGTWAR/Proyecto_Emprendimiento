@@ -12,7 +12,6 @@ const normalize = (s = "") =>
 const WorkersPage = () => {
   const { items: trabajadores, loading, error, add, edit, remove } = useWorkers();
 
-  // 🔎 NUEVO: departamentos desde la API
   const [departamentos, setDepartamentos] = useState([]);
   const [loadingDeps, setLoadingDeps] = useState(true);
 
@@ -20,7 +19,7 @@ const WorkersPage = () => {
     let alive = true;
     (async () => {
       try {
-        const res = await api("/departments"); // { ok, data: [...] }
+        const res = await api("/departments"); 
         if (alive) setDepartamentos(res?.data ?? []);
       } finally {
         if (alive) setLoadingDeps(false);
@@ -29,14 +28,13 @@ const WorkersPage = () => {
     return () => { alive = false; };
   }, []);
 
-  // diccionario id -> nombre (para mostrar rápido)
   const depNameById = useMemo(
     () => Object.fromEntries(departamentos.map(d => [Number(d.id), d.name])),
     [departamentos]
   );
 
   const [busqueda, setBusqueda] = useState('');
-  const [filtroDepartamento, setFiltroDepartamento] = useState('all'); // "all" | "<id>"
+  const [filtroDepartamento, setFiltroDepartamento] = useState('all'); 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [trabajadorAEditar, setTrabajadorAEditar] = useState(null);
@@ -44,7 +42,6 @@ const WorkersPage = () => {
   const [trabajadorAEliminar, setTrabajadorAEliminar] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // ✅ Filtrado por nombre/apellido + department_id
   const trabajadoresFiltrados = (trabajadores || []).filter(trabajador => {
     const coincideBusqueda =
       (trabajador.nombre || '').toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -114,14 +111,12 @@ const WorkersPage = () => {
   const formatearPago = (pago) =>
     new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(pago);
 
-  // ✅ Ahora recibe un ID y devuelve el nombre real
   const obtenerNombreDepartamento = (dep) => {
     if (dep == null) return "Sin departamento";
     const id = Number(dep);
     return depNameById[id] ?? "Sin departamento";
   };
 
-  // ✅ Color por nombre real (normalizado); fallback gris
   const obtenerColorDepartamento = (dep) => {
     const nombre = obtenerNombreDepartamento(dep);
     const key = normalize(nombre);
@@ -217,8 +212,8 @@ const WorkersPage = () => {
                   onEdit={editarTrabajador}
                   onDelete={abrirModalEliminar}
                   formatearPago={formatearPago}
-                  obtenerNombreDepartamento={obtenerNombreDepartamento}   // ahora funciona con ID
-                  obtenerColorDepartamento={obtenerColorDepartamento}     // color por nombre real
+                  obtenerNombreDepartamento={obtenerNombreDepartamento}  
+                  obtenerColorDepartamento={obtenerColorDepartamento}     
                 />
               ))}
             </div>

@@ -30,7 +30,6 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
         costo: initialData.costo ?? '',
         imagen: initialData.imagen || null
       });
-      // usa la URL almacenada (si viene del backend) como preview inicial
       if (initialData.imagen) setPreviewUrl(initialData.imagen);
     } else {
       setPreviewUrl('');
@@ -59,8 +58,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Nota: El backend actual usa material_img (URL); si envías File,
-    // tu servicio toAPI ignora imagen hasta que implementes upload.
+
     onSubmit(formData);
   };
 
