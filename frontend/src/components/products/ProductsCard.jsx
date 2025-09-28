@@ -19,7 +19,7 @@ const ProductsCard = ({ products: product, onVerDetalles}) => {
           <p className="text-gray-600 text-sm mb-3 line-clamp-3 flex-grow">{product.description}</p>
         <div className="pb-4 flex-grow">
           <h3 className="text-sm font-bold text-gray-800"> 
-            Tiempo estimado: {product.estimated_time} Horas
+            Tiempo estimado: {product.estimated_time} Minutos
           </h3>
         </div>
         <Button

@@ -15,8 +15,8 @@ const Button = ({
     outline: 'border border-[#209E7F] text-[#209E7F] hover:bg-[#209E7F] hover:text-white focus:ring-[#209E7F]',
     social: 'bg-white border border-[#D1D5DB] text-[#4B5563] hover:bg-[#F5F7FA] focus:ring-[#3B6DB3]',
     danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
-    blue: 'bg-[#3B6DB3] hover:bg-[#2D4E7A] text-white focus:ring-[#2D4E7A'
-  };
+    blue: 'bg-[#3B6DB3] hover:bg-[#2D4E7A] text-white focus:ring-[#2D4E7A',
+    gray: 'bg-[#F0F4F8] hover:bg-[#E1E8F0] text-[#374151] focus:ring-[#E1E8F0]'  };
   
   return (
     <button 
