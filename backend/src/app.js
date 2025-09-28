@@ -11,6 +11,7 @@ import workerRouter from "./routes/workerRoutes.js";
 import serviceRouter from "./routes/serviceRoutes.js";
 import processRouter from "./routes/processRoutes.js";
 import departmentRouter from "./routes/departmentRoutes.js"; 
+import companyRouter from "./routes/companyRoutes.js";  
 
 dotenv.config();
 
@@ -33,5 +34,6 @@ app.use("/api/workers", workerRouter);
 app.use("/api/services", serviceRouter);
 app.use("/api/processes", processRouter);
 app.use("/api/departments", departmentRouter); 
+app.use("/api/companies", companyRouter);  
 
 export default app;

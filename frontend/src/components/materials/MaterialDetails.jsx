@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import CloseButton from "../ui/CloseButton";
-import ButtonIcon from '../ui/ButtonIcon'; 
+import ButtonIcon from '../ui/ButtonIcon';
 import DeleteConfirmationModal from '../ui/DeleteConfirmationModal';
+
+const FALLBACK_IMG =
+  "https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg";
 
 const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPrecio }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -9,9 +12,7 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
 
   if (!material) return null;
 
-  const handleDeleteClick = () => {
-    setShowDeleteModal(true);
-  };
+  const handleDeleteClick = () => setShowDeleteModal(true);
 
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
@@ -25,9 +26,7 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
     }
   };
 
-  const handleCancelDelete = () => {
-    setShowDeleteModal(false);
-  };
+  const handleCancelDelete = () => setShowDeleteModal(false);
 
   const EditIcon = () => (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,59 +40,68 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
     </svg>
   );
 
+  const imgSrc = material?.imagen || FALLBACK_IMG;
+
   return (
     <>
       <div className="p-6">
-
         <div className="flex justify-between items-center mb-6 relative">
           <h1 className="text-2xl font-bold text-gray-800">Detalles del Material</h1>
           <CloseButton onClick={onCerrar} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
           <div className="h-64">
-            <img 
-              src={material.imagen} 
-              alt={material.nombre}
+            <img
+              src={imgSrc}
+              alt={material?.nombre || "material"}
               className="w-full h-full object-cover rounded-lg"
+              onError={(e) => { e.currentTarget.src = FALLBACK_IMG; }}
             />
           </div>
-          
+
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">{material.nombre}</h2>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">
+                {material?.nombre || "Sin nombre"}
+              </h2>
               <span className="inline-block px-3 py-1 bg-yellow-100 text-teal-800 text-sm font-medium rounded-full capitalize">
-                {material.tipo}
+                {material?.tipo || "sin etiqueta"}
               </span>
             </div>
-            
+
             <div className="space-y-3">
               <div className="max-h-32 overflow-y-auto">
                 <h3 className="text-sm font-medium text-gray-600 mb-1">Descripción</h3>
-                <p className="text-gray-800 whitespace-pre-wrap">{material.descripcion}</p>
+                <p className="text-gray-800 whitespace-pre-wrap">
+                  {material?.descripcion || "Sin descripción"}
+                </p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="text-sm font-medium text-gray-600 mb-1">Cantidad</h3>
-                  <p className="text-gray-800">{material.cantidad} {material.unidad}</p>
+                  <p className="text-gray-800">
+                    {(material?.cantidad ?? 0)} {material?.unidad || ""}
+                  </p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-600 mb-1">Tamaño</h3>
-                  <p className="text-gray-800 capitalize">{material.tamaño}</p>
+                  <p className="text-gray-800 capitalize">{material?.tamaño || "N/A"}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-600 mb-1">Medidas</h3>
-                  <p className="text-gray-800">{material.medidas || 'N/A'}</p>
+                  <p className="text-gray-800">{material?.medidas || 'N/A'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-600 mb-1">Costo unitario</h3>
-                  <p className="text-lg font-bold text-gray-800">{formatearPrecio(material.costo)}</p>
+                  <p className="text-lg font-bold text-gray-800">
+                    {formatearPrecio(material?.costo || 0)}
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <ButtonIcon
                 variant="primary"
@@ -104,15 +112,16 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
               >
                 Editar Material
               </ButtonIcon>
-              
+
               <ButtonIcon
                 variant="secondary"
                 onClick={handleDeleteClick}
                 icon={<DeleteIcon />}
                 iconPosition="left"
                 className="flex-1"
+                disabled={isDeleting}
               >
-                Eliminar
+                {isDeleting ? "Eliminando..." : "Eliminar"}
               </ButtonIcon>
             </div>
           </div>
@@ -123,7 +132,7 @@ const MaterialDetails = ({ material, onCerrar, onEditar, onEliminar, formatearPr
         isOpen={showDeleteModal}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        itemName={material.nombre}
+        itemName={material?.nombre || "este material"}
         loading={isDeleting}
       />
     </>
