@@ -67,22 +67,26 @@ model material_units {
   materials  materials[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model materials {
-  id               Int                @id @default(autoincrement())
-  name             String             @db.VarChar(255)
+  id               Int       @id @default(autoincrement())
+  name             String
   description      String?
-  waste_percentage Decimal            @db.Decimal
-  unit_cost        Decimal            @db.Decimal
-  material_img     String?            @db.VarChar(255)
+  waste_percentage Decimal
+  unit_cost        Decimal
+  material_img     String?
   company_id       Int
   material_unit_id Int
-  deleted_at       DateTime?          @db.Timestamp(6)
+  deleted_at       DateTime?
+  quantity         Int       @default(0)
+  measurements     String?   
+  size             String?
+  type             String? 
   material_tag     material_tag[]
   companies        companies          @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   material_units   material_units     @relation(fields: [material_unit_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   product_material product_material[]
 }
+
 
 model process_service {
   id         Int       @id @default(autoincrement())
@@ -102,7 +106,6 @@ model process_worker {
   workers    workers   @relation(fields: [worker_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model processes {
   id              Int               @id @default(autoincrement())
   name            String            @db.VarChar(255)
@@ -116,13 +119,13 @@ model processes {
   products        products          @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model product_material {
   id          Int       @id @default(autoincrement())
   product_id  Int
   material_id Int
   quantity    Int       @db.SmallInt
   deleted_at  DateTime? @db.Timestamp(6)
+  cost        Decimal   @db.Decimal(12, 2) @default(0) 
   materials   materials @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   products    products  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -136,7 +139,6 @@ model product_tag {
   tags       tags      @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model products {
   id               Int                @id @default(autoincrement())
   name             String             @db.VarChar(255)
@@ -144,6 +146,7 @@ model products {
   description      String?
   profit_margin    Decimal            @db.Decimal
   product_img      String?            @db.VarChar(255)
+  total_cost       Decimal            @db.Decimal(12, 2) @default(0)
   company_id       Int
   deleted_at       DateTime?          @db.Timestamp(6)
   processes        processes[]
@@ -154,7 +157,6 @@ model products {
   wishlist         wishlist[]
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model ratings {
   id         Int       @id @default(autoincrement())
   user_id    Int
@@ -165,7 +167,6 @@ model ratings {
   users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model services {
   id              Int               @id @default(autoincrement())
   name            String            @db.VarChar(255)
@@ -206,7 +207,6 @@ model wishlist {
   users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model workers {
   id             Int              @id @default(autoincrement())
   firstname      String           @db.VarChar(255)

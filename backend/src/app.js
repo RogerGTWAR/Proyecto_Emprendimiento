@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import path from "path"; 
 
 import materialRouter from "./routes/materialRoutes.js";
 import productRouter from "./routes/productRoutes.js";
@@ -24,6 +25,11 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true,
 }));
+
+app.use(
+  "/uploads",
+  express.static(path.join(process.cwd(), "public", "uploads"))
+);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 

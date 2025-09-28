@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import {
-  fetchMaterials,
-  createMaterial,
-  updateMaterial,
-  deleteMaterial
-} from "../data/materials.js";
+  fetchProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "../data/products.js";
 
-export function useMaterials() {
-  const [items, setItems] = useState([]);
+export function useProducts() {
+  const [items, setItems] = useState([]);    
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -15,10 +15,10 @@ export function useMaterials() {
     try {
       setLoading(true);
       setError("");
-      const list = await fetchMaterials();
+      const list = await fetchProducts();
       setItems(list);
     } catch (e) {
-      setError(e?.message || "Error al cargar materiales");
+      setError(e?.message || "Error al cargar productos");
     } finally {
       setLoading(false);
     }
@@ -27,20 +27,20 @@ export function useMaterials() {
   useEffect(() => { load(); }, []);
 
   const add = async (payloadUI) => {
-    const created = await createMaterial(payloadUI);
+    const created = await createProduct(payloadUI);
     setItems(prev => [created, ...prev]);
     return created;
   };
 
   const edit = async (id, payloadUI) => {
-    const updated = await updateMaterial(id, payloadUI);
-    setItems(prev => prev.map(m => (m.id === id ? updated : m)));
+    const updated = await updateProduct(id, payloadUI);
+    setItems(prev => prev.map(p => (p.id === id ? updated : p)));
     return updated;
   };
 
   const remove = async (id) => {
-    await deleteMaterial(id);
-    setItems(prev => prev.filter(m => m.id !== id));
+    await deleteProduct(id);
+    setItems(prev => prev.filter(p => p.id !== id));
   };
 
   return { items, loading, error, reload: load, add, edit, remove };

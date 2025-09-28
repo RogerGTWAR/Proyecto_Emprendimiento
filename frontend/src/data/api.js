@@ -2,15 +2,20 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 export async function api(path, { method = "GET", body, token } = {}) {
   const url = `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
-  console.log("[API] ->", url);
+  console.log("[API] ->", method, url);
+
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+
+  const headers = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(!isFormData ? { "Content-Type": "application/json" } : {}),
+  };
+
   const res = await fetch(url, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
+    headers,
     credentials: "include",
-    body: body ? JSON.stringify(body) : undefined
+    body: isFormData ? body : body ? JSON.stringify(body) : undefined,
   });
 
   const text = await res.text();
@@ -20,5 +25,5 @@ export async function api(path, { method = "GET", body, token } = {}) {
     const msg = json.msg || json.message || `Error ${res.status}`;
     throw new Error(msg);
   }
-  return json; 
+  return json;
 }
