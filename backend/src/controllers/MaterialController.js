@@ -1,5 +1,8 @@
 import prisma from "../database.js";
 import TagController from "./TagController.js";
+import path from "path";
+import fs from "fs/promises";
+import cryto from "crypto";
 
 export default class MaterialController {
 
@@ -115,7 +118,6 @@ export default class MaterialController {
       company_id,
       unit_cost,
       material_unit_id,
-      material_img,
       tags
     } = req.body;
 
@@ -153,6 +155,16 @@ export default class MaterialController {
 
     try {
 
+      const file = req.file;
+      let newName = null;
+
+      if (file) {
+        const ext = path.extname(file.originalname);
+        newName = crypto.randomUUID() + ext;
+
+        await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer);
+      }
+
       let material = await prisma.materials.create({
         data: {
           name,
@@ -160,7 +172,7 @@ export default class MaterialController {
           unit_cost,
           waste_percentage,
           material_unit_id: unitMaterialId,
-          material_img: material_img ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg',
+          material_img: (newName ? `http://localhost:3000/uploads/material_images/${newName}` : null) ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg',
           company_id: companyId
         }
       });
@@ -205,6 +217,7 @@ export default class MaterialController {
       });
 
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         ok: false,
         msg: "Server error something went wrong"
@@ -221,7 +234,6 @@ export default class MaterialController {
       waste_percentage,
       unit_cost,
       material_unit_id,
-      material_img,
       tags
     } = req.body;
 
@@ -265,6 +277,18 @@ export default class MaterialController {
     }
 
     try {
+
+      const file = req.file;
+
+      let newName = null;
+      if (file) {
+        const ext = path.extname(file.originalname);
+        newName = crypto.randomUUID() + ext;
+
+        await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer)
+      };
+
+
       let material = await prisma.materials.update(
         {
           where: { id: materialId },
@@ -272,7 +296,7 @@ export default class MaterialController {
             name: name ?? oldMaterial.name,
             description: description ?? oldMaterial.description,
             waste_percentage: waste_percentage ?? oldMaterial.waste_percentage,
-            material_img: material_img ?? oldMaterial.material_img,
+            material_img: (newName ? `http://localhost:3000/uploads/material_images/${newName}` : null) ?? oldMaterial.material_img,
             unit_cost: unit_cost ?? oldMaterial.unit_cost,
             material_unit_id: unitMaterialId ?? oldMaterial.material_unit_id
           }

@@ -13,6 +13,8 @@ app.use(cors({
   origin: true,
   credentials: true
 }));
+
+app.use(express.static('public'));
 app.use(cookieParser());
 app.use(express.json());
 

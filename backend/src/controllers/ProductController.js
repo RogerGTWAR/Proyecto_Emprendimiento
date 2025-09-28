@@ -140,7 +140,6 @@ export default class ProductController {
       description,
       estimated_time,
       profit_margin,
-      product_img,
       company_id,
       materials,
       tags
@@ -163,6 +162,15 @@ export default class ProductController {
     };
 
     try {
+      const file = req.file;
+      let newName = null;
+
+      if (file) {
+        const ext = path.extname(file.originalname);
+        newName = crypto.randomUUID() + ext;
+
+        await fs.writeFile(`./public/uploads/product_images/${newName}`, file.buffer);
+      }
 
       let product = await prisma.products.create({
         data: {
@@ -170,7 +178,7 @@ export default class ProductController {
           description,
           estimated_time,
           profit_margin,
-          product_img: product_img ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg',
+          product_img: (newName ? `http://localhost:3000/uploads/product_images/${newName}` : null) ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg',
           company_id: companyId
         }
       });
@@ -270,7 +278,6 @@ export default class ProductController {
       description,
       estimated_time,
       profit_margin,
-      product_img,
       materials,
       tags
     } = req.body;
@@ -296,6 +303,16 @@ export default class ProductController {
     }
 
     try {
+      const file = req.file;
+      let newName = null;
+
+      if (file) {
+        const ext = path.extname(file.originalname);
+        newName = crypto.randomUUID() + ext;
+
+        await fs.writeFile(`./public/uploads/product_images/${newName}`, file.buffer);
+      }
+
       const product = await prisma.products.update(
         {
           where: { id: productId },
@@ -304,7 +321,7 @@ export default class ProductController {
             description: description ?? oldProduct.description,
             estimated_time: estimated_time ?? oldProduct.estimated_time,
             profit_margin: profit_margin ?? oldProduct.profit_margin,
-            product_img: product_img ?? oldProduct.product_img
+            product_img: (newName ? `http://localhost:3000/uploads/product_images/${newName}` : null) ?? oldProduct.product_img
           }
         },
       );
