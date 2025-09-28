@@ -12,7 +12,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
     medidas: '',
     tamaño: '',
     costo: '',
-    imagen: null
+    imagen: null 
   });
 
   const [previewUrl, setPreviewUrl] = useState('');
@@ -24,67 +24,52 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
         tipo: initialData.tipo || '',
-        cantidad: initialData.cantidad || '',
+        cantidad: initialData.cantidad ?? '',
         medidas: initialData.medidas || '',
         tamaño: initialData.tamaño || '',
-        costo: initialData.costo || '',
+        costo: initialData.costo ?? '',
         imagen: initialData.imagen || null
       });
-      
-      if (initialData.imagenUrl) {
-        setPreviewUrl(initialData.imagenUrl);
-      }
+      if (initialData.imagen) setPreviewUrl(initialData.imagen);
+    } else {
+      setPreviewUrl('');
     }
   }, [initialData]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [e.target.name]: e.target.value
-    });
+    }));
   };
 
-  const handleFocus = (fieldName) => {
-    setFocusedField(fieldName);
-  };
-
-  const handleBlur = () => {
-    setFocusedField(null);
-  };
+  const handleFocus = (fieldName) => setFocusedField(fieldName);
+  const handleBlur = () => setFocusedField(null);
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
-      setFormData({
-        ...formData,
-        imagen: file
-      });
-
+      setFormData(prev => ({ ...prev, imagen: file }));
       const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewUrl(reader.result);
-      };
+      reader.onload = () => setPreviewUrl(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     onSubmit(formData);
   };
 
   const removeImage = () => {
-    setFormData({
-      ...formData,
-      imagen: null
-    });
+    setFormData(prev => ({ ...prev, imagen: null }));
     setPreviewUrl('');
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
-
         <div className="flex items-center justify-between p-4 border-b border-[#D1D5DB]">
           <h2 className="text-xl font-semibold text-[#1E1E1E]">
             {isEdit ? 'Editar Material' : 'Agregar Material'}
@@ -125,6 +110,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
                 <option value="textil">Textil</option>
                 <option value="cuero">Cuero</option>
                 <option value="alimento">Alimento</option>
+                <option value="sin etiqueta">Sin etiqueta</option>
               </select>
             </div>
           </div>
@@ -140,7 +126,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
               onChange={handleChange}
               onFocus={() => handleFocus('descripcion')}
               onBlur={handleBlur}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duration-200 text-[#4B5563] resize-vertical"
+              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duración-200 text-[#4B5563] resize-vertical"
               placeholder="Describe las características del material..."
             />
           </div>
@@ -170,7 +156,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
                 onChange={handleChange}
                 onFocus={() => handleFocus('tamaño')}
                 onBlur={handleBlur}
-                className="w-full px-3 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duration-200 text-[#4B5563]"
+                className="w-full px-3 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duración-200 text-[#4B5563]"
               >
                 <option value="">Seleccionar tamaño</option>
                 <option value="pequeño">Pequeño</option>
@@ -213,12 +199,12 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             <label className="block text-sm font-medium text-[#1E1E1E]">
               Imagen del Material
             </label>
-            
+
             {previewUrl ? (
               <div className="relative">
-                <img 
-                  src={previewUrl} 
-                  alt="Preview" 
+                <img
+                  src={previewUrl}
+                  alt="Preview"
                   className="w-full h-48 object-cover rounded-lg border border-[#D1D5DB]"
                 />
                 <button
@@ -232,7 +218,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
                 </button>
               </div>
             ) : (
-              <label 
+              <label
                 className={`flex flex-col items-center justify-center w-full h-32 border border-[#D1D5DB] rounded-lg cursor-pointer hover:bg-[#F5F7FA] transition-colors duration-200 ${focusedField === 'imagen' ? 'ring-2 ring-[#209E7F]' : ''}`}
                 onFocus={() => handleFocus('imagen')}
                 onBlur={handleBlur}

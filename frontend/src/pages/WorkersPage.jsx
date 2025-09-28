@@ -1,14 +1,40 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { api } from '../data/api.js';
 import Button from '../components/ui/Button';
 import WorkerForm from '../components/workers/WorkerForm';
 import WorkerCard from '../components/workers/WorkerCard';
 import DeleteConfirmationModal from '../components/ui/DeleteConfirmationModal';
-import { trabajadoresPrueba } from '../data/workersData';
+import { useWorkers } from "../hooks/useWorkers";
+
+const normalize = (s = "") =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 const WorkersPage = () => {
-  const [trabajadores, setTrabajadores] = useState(trabajadoresPrueba);
+  const { items: trabajadores, loading, error, add, edit, remove } = useWorkers();
+
+  const [departamentos, setDepartamentos] = useState([]);
+  const [loadingDeps, setLoadingDeps] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await api("/departments"); 
+        if (alive) setDepartamentos(res?.data ?? []);
+      } finally {
+        if (alive) setLoadingDeps(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const depNameById = useMemo(
+    () => Object.fromEntries(departamentos.map(d => [Number(d.id), d.name])),
+    [departamentos]
+  );
+
   const [busqueda, setBusqueda] = useState('');
-  const [filtroDepartamento, setFiltroDepartamento] = useState('todos');
+  const [filtroDepartamento, setFiltroDepartamento] = useState('all'); 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [trabajadorAEditar, setTrabajadorAEditar] = useState(null);
@@ -16,16 +42,17 @@ const WorkersPage = () => {
   const [trabajadorAEliminar, setTrabajadorAEliminar] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const trabajadoresFiltrados = trabajadores.filter(trabajador => {
-    const coincideBusqueda = trabajador.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      trabajador.apellido.toLowerCase().includes(busqueda.toLowerCase());
-    const coincideDepartamento = filtroDepartamento === 'todos' || trabajador.departamento === filtroDepartamento;
+  const trabajadoresFiltrados = (trabajadores || []).filter(trabajador => {
+    const coincideBusqueda =
+      (trabajador.nombre || '').toLowerCase().includes(busqueda.toLowerCase()) ||
+      (trabajador.apellido || '').toLowerCase().includes(busqueda.toLowerCase());
+
+    const coincideDepartamento =
+      filtroDepartamento === 'all' ||
+      Number(trabajador.department_id) === Number(filtroDepartamento);
+
     return coincideBusqueda && coincideDepartamento;
   });
-
-  const eliminarTrabajador = (id) => {
-    setTrabajadores(trabajadores.filter(trabajador => trabajador.id !== id));
-  };
 
   const abrirModalEliminar = (trabajador) => {
     setTrabajadorAEliminar(trabajador);
@@ -33,9 +60,10 @@ const WorkersPage = () => {
   };
 
   const handleConfirmDelete = async () => {
+    if (!trabajadorAEliminar) return;
     setIsDeleting(true);
     try {
-      eliminarTrabajador(trabajadorAEliminar.id);
+      await remove(trabajadorAEliminar.id);
       setShowDeleteModal(false);
     } catch (error) {
       console.error('Error al eliminar:', error);
@@ -68,68 +96,50 @@ const WorkersPage = () => {
     setModoEdicion(false);
   };
 
-  const agregarTrabajador = (nuevoTrabajador) => {
-    const nuevoTrabajadorConId = {
-      ...nuevoTrabajador,
-      id: Math.max(...trabajadores.map(t => t.id), 0) + 1,
-    };
-    
-    setTrabajadores([...trabajadores, nuevoTrabajadorConId]);
+  const agregarTrabajador = async (nuevoTrabajador) => {
+    await add(nuevoTrabajador);
     setMostrarFormulario(false);
   };
 
-  const actualizarTrabajador = (trabajadorActualizado) => {
-    const trabajadoresActualizados = trabajadores.map(trabajador => 
-      trabajador.id === trabajadorAEditar.id 
-        ? { ...trabajadorActualizado, id: trabajadorAEditar.id }
-        : trabajador
-    );
-    
-    setTrabajadores(trabajadoresActualizados);
+  const actualizarTrabajador = async (trabajadorActualizado) => {
+    await edit(trabajadorAEditar.id, trabajadorActualizado);
     setMostrarFormulario(false);
     setTrabajadorAEditar(null);
     setModoEdicion(false);
   };
 
-  const formatearPago = (pago) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
-    }).format(pago);
+  const formatearPago = (pago) =>
+    new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(pago);
+
+  const obtenerNombreDepartamento = (dep) => {
+    if (dep == null) return "Sin departamento";
+    const id = Number(dep);
+    return depNameById[id] ?? "Sin departamento";
   };
 
-  const obtenerNombreDepartamento = (departamento) => {
-    const departamentos = {
-      produccion: 'Producción',
-      ventas: 'Ventas',
-      administracion: 'Administración',
-      logistica: 'Logística',
-      rrhh: 'Recursos Humanos'
-    };
-    return departamentos[departamento] || departamento;
-  };
-
-  const obtenerColorDepartamento = (departamento) => {
+  const obtenerColorDepartamento = (dep) => {
+    const nombre = obtenerNombreDepartamento(dep);
+    const key = normalize(nombre);
     const colores = {
       produccion: 'bg-blue-100 text-blue-800',
       ventas: 'bg-green-100 text-green-800',
       administracion: 'bg-purple-100 text-purple-800',
       logistica: 'bg-yellow-100 text-yellow-800',
-      rrhh: 'bg-pink-100 text-pink-800'
+      'recursos humanos': 'bg-pink-100 text-pink-800',
+      rrhh: 'bg-pink-100 text-pink-800',
     };
-    return colores[departamento] || 'bg-gray-100 text-gray-800';
+    return colores[key] || 'bg-gray-100 text-gray-800';
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
-        
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Gestión de Trabajadores</h1>
             <p className="text-gray-600">Administra los trabajadores de tu empresa</p>
           </div>
-          
+
           <Button
             onClick={abrirFormulario}
             variant="blue"
@@ -159,7 +169,7 @@ const WorkersPage = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent"
               />
             </div>
-            
+
             <div className="w-full md:w-56">
               <label htmlFor="filtro-departamento" className="block text-sm font-medium text-gray-700 mb-1">
                 Filtrar por departamento
@@ -169,11 +179,14 @@ const WorkersPage = () => {
                 value={filtroDepartamento}
                 onChange={(e) => setFiltroDepartamento(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent"
+                disabled={loadingDeps}
               >
-                <option value="todos">Todos los departamentos</option>
-                <option value="produccion">Producción</option>
-                <option value="ventas">Ventas</option>
-                <option value="administracion">Administración</option>
+                <option value="all">{loadingDeps ? "Cargando..." : "Todos los departamentos"}</option>
+                {!loadingDeps && departamentos.map((dep) => (
+                  <option key={dep.id} value={String(dep.id)}>
+                    {dep.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -186,8 +199,11 @@ const WorkersPage = () => {
               {trabajadoresFiltrados.length} {trabajadoresFiltrados.length === 1 ? 'trabajador' : 'trabajadores'}
             </span>
           </div>
-          
-          {trabajadoresFiltrados.length > 0 ? (
+
+          {loading && <p className="text-gray-600 mb-4">Cargando trabajadores…</p>}
+          {error && <p className="text-red-600 mb-4">Error: {error}</p>}
+
+          {!loading && trabajadoresFiltrados.length > 0 ? (
             <div>
               {trabajadoresFiltrados.map((trabajador) => (
                 <WorkerCard
@@ -196,12 +212,12 @@ const WorkersPage = () => {
                   onEdit={editarTrabajador}
                   onDelete={abrirModalEliminar}
                   formatearPago={formatearPago}
-                  obtenerNombreDepartamento={obtenerNombreDepartamento}
-                  obtenerColorDepartamento={obtenerColorDepartamento}
+                  obtenerNombreDepartamento={obtenerNombreDepartamento}  
+                  obtenerColorDepartamento={obtenerColorDepartamento}     
                 />
               ))}
             </div>
-          ) : (
+          ) : !loading ? (
             <div className="text-center py-12">
               <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -209,7 +225,7 @@ const WorkersPage = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron trabajadores</h3>
               <p className="text-gray-500">Intenta con otros términos de búsqueda o ajusta los filtros.</p>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
