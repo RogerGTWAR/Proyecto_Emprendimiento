@@ -30,10 +30,12 @@ npm install
 En la raiz del proyecto encontraras el archivo hackathonDB.sql, descargalo 
 y asegurate de ejecutarlo en tu gestor de base de datos de PostgreSQL.
 
-## Crea un archivo .env y copia los valores del archivo env.example en .env
+## Crea y reemplaza los archivos .env
 
-Una vez tengas el archivo .env reemplaza los valores por tus respectivas credenciales 
-para el funcionamiento correcto de la app.
+Dentro de las carpetas /backend y /frontend encontraras archivos example.env, 
+debes de copiar el contenido de estos archivos y pegarlos en archivos .env que 
+debes crear en la carpeta /backend y /frontend. Luego de pegar el contenido 
+reemplaza cada una de las variables de entorno por tus credenciales.
 
 ## Conectar la base de datos con el backend
 
