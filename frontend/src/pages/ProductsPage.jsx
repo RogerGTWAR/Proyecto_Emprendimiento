@@ -2,31 +2,33 @@ import { useState } from 'react';
 import ProductsCard from '../components/products/ProductsCard';
 import ProductsDetails from '../components/products/ProductsDetails';
 import ProductForm from '../components/products/ProductForm';
-import { productsPrueba } from '../data/productsData';
 import Button from '../components/ui/Button';
+import { useProducts } from '../hooks/useProducts';
+import { fetchProductById } from '../data/products'; 
 
 const ProductsPage = () => {
-  const [products, setProducts] = useState(productsPrueba);
+  const { items: products, loading, error, add, edit, remove } = useProducts();
+
   const [busqueda, setBusqueda] = useState('');
   const [paginaActual, setPaginaActual] = useState(1);
   const productsPorPagina = 8;
+
   const [vistaDetalle, setVistaDetalle] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [productoAEditar, setProductoAEditar] = useState(null);
 
-  const productosFiltrados = products.filter(prod => 
-    prod.activo !== 0 && 
-    (prod.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-     prod.description.toLowerCase().includes(busqueda.toLowerCase()))
-  );
+  const productosFiltrados = products.filter((prod) => {
+    const q = busqueda.toLowerCase();
+    const nombre = (prod.nombre || '').toLowerCase();
+    const descripcion = (prod.descripcion || '').toLowerCase();
+    return nombre.includes(q) || descripcion.includes(q);
+  });
 
   const indiceUltimoProducto = paginaActual * productsPorPagina;
   const indicePrimerProducto = indiceUltimoProducto - productsPorPagina;
-
   const productosActuales = productosFiltrados.slice(indicePrimerProducto, indiceUltimoProducto);
-
   const totalPaginas = Math.ceil(productosFiltrados.length / productsPorPagina);
 
   const cambiarPagina = (numeroPagina) => {
@@ -35,20 +37,20 @@ const ProductsPage = () => {
     window.scrollTo(0, 0);
   };
 
-  const eliminarProducto = (id) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((prod) =>
-        prod.id === id ? { ...prod, activo: 0 } : prod
-      )
-    );
+  const eliminarProducto = async (id) => {
+    await remove(id);
     cerrarDetalles();
   };
 
-  const verDetalles = (producto) => {
-    setProductoSeleccionado(producto);
+const verDetalles = async (producto) => {
+  try {
+    const detalle = await fetchProductById(producto.id);
+    setProductoSeleccionado(detalle);
     setVistaDetalle(true);
-  };
-
+  } catch (e) {
+    console.error(e);
+  }
+};
   const cerrarDetalles = () => {
     setVistaDetalle(false);
     setProductoSeleccionado(null);
@@ -70,50 +72,37 @@ const ProductsPage = () => {
     setProductoAEditar(producto);
     setModoEdicion(true);
     setMostrarFormulario(true);
-    setVistaDetalle(false); 
+    setVistaDetalle(false);
   };
 
-  const agregarProducto = (nuevoProducto) => {
-    const nuevoProductoConId = {
-      ...nuevoProducto,
-      id: Math.max(...products.map(p => p.id)) + 1,
-      activo: 1
-    };
-    
-    setProducts([...products, nuevoProductoConId]);
+  const agregarProducto = async (nuevoProductoUI) => {
+    const creado = await add(nuevoProductoUI);
     setMostrarFormulario(false);
-    console.log("Producto agregado:", nuevoProductoConId);
+    console.log('Producto agregado:', creado);
   };
 
-  const actualizarProducto = (productoActualizado) => {
-    const productosActualizados = products.map(producto => 
-      producto.id === productoAEditar.id 
-        ? { ...productoActualizado, id: productoAEditar.id }
-        : producto
-    );
-    
-    setProducts(productosActualizados);
+  const actualizarProducto = async (productoActualizadoUI) => {
+    if (!productoAEditar) return;
+    const actualizado = await edit(productoAEditar.id, productoActualizadoUI);
     setMostrarFormulario(false);
     setProductoAEditar(null);
     setModoEdicion(false);
-    
-    if (vistaDetalle && productoSeleccionado && productoSeleccionado.id === productoAEditar.id) {
-      setProductoSeleccionado({ ...productoActualizado, id: productoAEditar.id });
+
+    if (vistaDetalle && productoSeleccionado && productoSeleccionado.id === actualizado.id) {
+      setProductoSeleccionado(actualizado);
     }
-    
-    console.log("Producto actualizado:", productoActualizado);
+    console.log('Producto actualizado:', actualizado);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Mis Productos</h1>
             <p className="text-gray-600">Gestiona y revisa todos los productos creados</p>
           </div>
-          
+
           <Button
             onClick={abrirFormulario}
             variant="blue"
@@ -141,21 +130,27 @@ const ProductsPage = () => {
                 value={busqueda}
                 onChange={(e) => {
                   setBusqueda(e.target.value);
-                  setPaginaActual(1); 
+                  setPaginaActual(1);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent"
               />
             </div>
-            
+
             <div className="w-full md:w-auto">
               <div className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
-                {productosFiltrados.length} producto{productosFiltrados.length !== 1 ? 's' : ''} encontrado{productosFiltrados.length !== 1 ? 's' : ''}
+                {productosFiltrados.length} producto
+                {productosFiltrados.length !== 1 ? 's' : ''} encontrado
+                {productosFiltrados.length !== 1 ? 's' : ''}
               </div>
             </div>
           </div>
         </div>
 
-        {productosActuales.length > 0 ? (
+        {loading ? (
+          <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-600">Cargando...</div>
+        ) : error ? (
+          <div className="bg-white rounded-xl shadow-sm p-8 text-center text-red-600">{error}</div>
+        ) : productosActuales.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {productosActuales.map((producto) => (
@@ -167,7 +162,6 @@ const ProductsPage = () => {
               ))}
             </div>
 
-            {/* Paginación unificada - Igual a MaterialsPage */}
             {totalPaginas > 1 && (
               <div className="flex justify-center items-center space-x-2 mb-8">
                 <button
@@ -221,10 +215,9 @@ const ProductsPage = () => {
               {busqueda ? 'No se encontraron productos' : 'No hay productos'}
             </h3>
             <p className="text-gray-500 mb-4">
-              {busqueda 
+              {busqueda
                 ? `No hay resultados para "${busqueda}". Intenta con otros términos.`
-                : 'Aún no has creado ningún producto.'
-              }
+                : 'Aún no has creado ningún producto.'}
             </p>
             <button
               onClick={abrirFormulario}
@@ -237,7 +230,6 @@ const ProductsPage = () => {
             </button>
           </div>
         )}
-
       </div>
 
       {vistaDetalle && productoSeleccionado && (

@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import CloseButton from "../ui/CloseButton";
+import { api } from '../../data/api.js';
+import { createMaterial, updateMaterial } from '../../data/materials.js';
 
-const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
+const MaterialForm = ({ onClose, initialData, isEdit = false, onSaved }) => {
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -12,36 +14,70 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
     medidas: '',
     tamaño: '',
     costo: '',
-    imagen: null 
+    imagen: null,
+    material_unit_id: ''
   });
 
   const [previewUrl, setPreviewUrl] = useState('');
   const [focusedField, setFocusedField] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [units, setUnits] = useState([]);
+  const [loadingUnits, setLoadingUnits] = useState(false);
+  const [unitsError, setUnitsError] = useState('');
 
   useEffect(() => {
     if (initialData) {
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
-        tipo: initialData.tipo || '',
+        tipo: initialData.tipo ?? initialData.type ?? '',
         cantidad: initialData.cantidad ?? '',
         medidas: initialData.medidas || '',
         tamaño: initialData.tamaño || '',
         costo: initialData.costo ?? '',
-        imagen: initialData.imagen || null
-      });
+        imagen: null, 
+        material_unit_id: initialData.material_unit_id ?? ''
+      }));
       if (initialData.imagen) setPreviewUrl(initialData.imagen);
     } else {
       setPreviewUrl('');
     }
   }, [initialData]);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingUnits(true);
+        setUnitsError('');
+        const res = await api('/materials');
+        const list = Array.isArray(res)
+          ? res
+          : Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res?.units)
+          ? res.units
+          : [];
+        if (mounted) setUnits(list);
+      } catch (e) {
+        if (mounted) setUnitsError(e?.message || 'No se pudieron cargar las unidades');
+      } finally {
+        if (mounted) setLoadingUnits(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: name === "material_unit_id" ? Number(value) || "" : value
     }));
   };
+
 
   const handleFocus = (fieldName) => setFocusedField(fieldName);
   const handleBlur = () => setFocusedField(null);
@@ -56,15 +92,48 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    onSubmit(formData);
-  };
-
   const removeImage = () => {
     setFormData(prev => ({ ...prev, imagen: null }));
     setPreviewUrl('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.material_unit_id) {
+      alert('Selecciona una unidad de medida');
+      return;
+    }
+
+    const payload = {
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
+      costo: formData.costo,
+      waste_percentage: 0,  
+      company_id: 1,       
+      material_unit_id: formData.material_unit_id,
+      cantidad: formData.cantidad,
+      medidas: formData.medidas,
+      tamaño: formData.tamaño,
+      imagen: formData.imagen,
+      type: formData.tipo,
+    };
+
+    setSubmitting(true);
+    try {
+      let saved;
+      if (isEdit && initialData?.id) {
+        saved = await updateMaterial(initialData.id, payload);
+      } else {
+        saved = await createMaterial(payload);
+      }
+      onSaved?.(saved);
+      onClose?.();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || 'No se pudo guardar el material');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -93,9 +162,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             />
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-[#1E1E1E]">
-                Tipo
-              </label>
+              <label className="block text-sm font-medium text-[#1E1E1E]">Tipo</label>
               <select
                 name="tipo"
                 value={formData.tipo}
@@ -116,9 +183,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-[#1E1E1E]">
-              Descripción
-            </label>
+            <label className="block text-sm font-medium text-[#1E1E1E]">Descripción</label>
             <textarea
               name="descripcion"
               rows={4}
@@ -147,9 +212,7 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             />
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-[#1E1E1E]">
-                Tamaño
-              </label>
+              <label className="block text-sm font-medium text-[#1E1E1E]">Tamaño</label>
               <select
                 name="tamaño"
                 value={formData.tamaño}
@@ -195,10 +258,38 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             <label className="block text-sm font-medium text-[#1E1E1E]">
-              Imagen del Material
+              Unidad de medida
             </label>
+
+            <select
+              name="material_unit_id"
+              value={formData.material_unit_id ?? ""}
+              onChange={handleChange}
+              onFocus={() => handleFocus("material_unit_id")}
+              onBlur={handleBlur}
+              className="w-full px-3 py-2.5 border border-[#D1D5DB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#209E7F] focus:border-transparent transition-colors duration-200 text-[#4B5563]"
+              required
+              disabled={loadingUnits || !!unitsError}
+            >
+              <option value="">
+                {loadingUnits ? "Cargando..." : unitsError || "Seleccionar unidad"}
+              </option>
+
+              <option value="1">Metro</option>
+              <option value="2">Yarda</option>
+              <option value="3">Metro cubico</option>
+              <option value="4">Pie cuadrado</option>
+              <option value="5">Kilogramo</option>
+              <option value="6">Libra</option>
+              <option value="7">Litro</option>
+              <option value="8">Unidad</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-[#1E1E1E]">Imagen del Material</label>
 
             {previewUrl ? (
               <div className="relative">
@@ -244,11 +335,22 @@ const MaterialForm = ({ onClose, onSubmit, initialData, isEdit = false }) => {
           </div>
 
           <div className="flex space-x-3 pt-4">
-            <Button type="button" variant="secondary" onClick={onClose} className="flex-1 py-2.5">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              className="flex-1 py-2.5"
+              disabled={submitting}
+            >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" className="flex-1 py-2.5">
-              {isEdit ? 'Guardar Cambios' : 'Agregar Material'}
+            <Button
+              type="submit"
+              variant="primary"
+              className="flex-1 py-2.5"
+              disabled={submitting}
+            >
+              {submitting ? 'Guardando...' : isEdit ? 'Guardar Cambios' : 'Agregar Material'}
             </Button>
           </div>
         </form>

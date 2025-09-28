@@ -1,5 +1,8 @@
 import prisma from "../database.js";
 import TagController from "./TagController.js";
+import path from "path";
+import fs from "fs/promises";
+import crypto from "crypto";
 
 export default class MaterialController {
 
@@ -90,7 +93,7 @@ export default class MaterialController {
     if (material === null) {
       return res.status(404).json({
         ok: false,
-        msg: `No se encontro el material con id: ${materialId}`
+        msg: `No se encontro el material con id: ${materialId}` 
       })
     }
 
@@ -115,8 +118,11 @@ export default class MaterialController {
       company_id,
       unit_cost,
       material_unit_id,
-      material_img,
-      tags
+      tags,
+      quantity,
+      measurements,
+      size,
+      type
     } = req.body;
 
     const companyId = parseInt(company_id);
@@ -153,6 +159,16 @@ export default class MaterialController {
 
     try {
 
+      const file = req.file;
+      let newName = null;
+
+      if (file) {
+        const ext = path.extname(file.originalname);
+        newName = crypto.randomUUID() + ext;
+
+        await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer);
+      }
+
       let material = await prisma.materials.create({
         data: {
           name,
@@ -160,8 +176,12 @@ export default class MaterialController {
           unit_cost,
           waste_percentage,
           material_unit_id: unitMaterialId,
-          material_img: material_img ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg',
-          company_id: companyId
+          material_img: (newName ? `http://localhost:3000/uploads/material_images/${newName}` : null) ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg', // <- fix comillas
+          company_id: companyId,
+          quantity: Number.isFinite(parseInt(quantity)) ? parseInt(quantity) : 0,
+          measurements: (measurements ?? null),
+          size: (size ?? null),
+          type: (type ?? null)
         }
       });
 
@@ -205,6 +225,7 @@ export default class MaterialController {
       });
 
     } catch (error) {
+      console.log(error);
       res.status(500).json({
         ok: false,
         msg: "Server error something went wrong"
@@ -221,8 +242,11 @@ export default class MaterialController {
       waste_percentage,
       unit_cost,
       material_unit_id,
-      material_img,
-      tags
+      tags,
+      quantity,
+      measurements,
+      size,
+      type
     } = req.body;
 
     const materialId = parseInt(id);
@@ -265,6 +289,18 @@ export default class MaterialController {
     }
 
     try {
+
+      const file = req.file;
+
+      let newName = null;
+      if (file) {
+        const ext = path.extname(file.originalname);
+        newName = crypto.randomUUID() + ext;
+
+        await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer) 
+      };
+
+
       let material = await prisma.materials.update(
         {
           where: { id: materialId },
@@ -272,9 +308,13 @@ export default class MaterialController {
             name: name ?? oldMaterial.name,
             description: description ?? oldMaterial.description,
             waste_percentage: waste_percentage ?? oldMaterial.waste_percentage,
-            material_img: material_img ?? oldMaterial.material_img,
+            material_img: (newName ? `http://localhost:3000/uploads/material_images/${newName}` : null) ?? oldMaterial.material_img,
             unit_cost: unit_cost ?? oldMaterial.unit_cost,
-            material_unit_id: unitMaterialId ?? oldMaterial.material_unit_id
+            material_unit_id: unitMaterialId ?? oldMaterial.material_unit_id,
+            quantity: (quantity !== undefined ? parseInt(quantity) : oldMaterial.quantity) ?? oldMaterial.quantity,
+            measurements: (measurements !== undefined ? measurements : oldMaterial.measurements),
+            size: (size !== undefined ? size : oldMaterial.size),
+            type: (type !== undefined ? type : oldMaterial.type)
           }
         },
       );
@@ -442,5 +482,3 @@ export default class MaterialController {
     }
   }
 }
-
-
