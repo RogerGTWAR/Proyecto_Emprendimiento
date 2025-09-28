@@ -15,6 +15,11 @@ Ve a la raiz del proyecto y ejecuta el siguiente comando:
 ```bash 
 npm install
 ```
+##Generar el cliente de Prisma
+
+Después de instalar dependencias, ejecuta el siguiente comando para generar el cliente de Prisma:
+
+npx prisma generate
 
 ## Correr el programa
 
