@@ -1,7 +1,7 @@
 <p align="center">
     <img src="frontend/public/Logo.png" width="200" height="200" alt="MateriaLab Logo">
     <br>
-    <h1 style="color: #111A3B; font-weight: bold;">MateriaLab</span>
+    <h1 style="color: #111A3B; font-weight: bold;">MateriaLab</h1>
 </p>
 
 Para ejecutar el programa necesitas seguir los siguientes pasos: 
