@@ -1,4 +1,3 @@
-// src/components/ui/CloseButton.jsx
 import React from "react";
 
 const CloseButton = ({ onClick, className = "" }) => {

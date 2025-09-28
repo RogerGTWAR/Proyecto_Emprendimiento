@@ -218,8 +218,8 @@ const MaterialsPage = () => {
       {mostrarFormulario && (
         <MaterialForm
           onClose={cerrarFormulario}
-          onSubmit={modoEdicion ? actualizarMaterial : agregarMaterial}
-          initialData={materialAEditar}
+        onSaved={modoEdicion ? actualizarMaterial : agregarMaterial}  
+        initialData={materialAEditar}
           isEdit={modoEdicion}
         />
       )}
