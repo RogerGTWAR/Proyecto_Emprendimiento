@@ -4,6 +4,11 @@
     <h1 style="color: #111A3B; font-weight: bold;">MateriaLab</h1>
 </div>
 
+# Requisitos del sistema
+
+- Node.js y npm (LTS)
+- PostgreSQL 18
+
 Para ejecutar el programa necesitas seguir los siguientes pasos: 
 
 ## Clonar el repositorio
