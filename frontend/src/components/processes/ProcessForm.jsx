@@ -313,12 +313,12 @@ const handleSubmit = async () => {
       const id = safeNum(w?.id, NaN);
       if (!Number.isFinite(id)) return null;
       const hourly = safeNum(w?.pagoPorHora ?? w?.pago, 0);
-      return { id, cost_labor: hourly * horas }; // 🔁 siempre recalculado
+      return { id, cost_labor: hourly * horas }; 
     })
     .filter(Boolean);
 
   const payload = {
-    name: `Proceso - ${str(prod?.nombre) || "Sin nombre"}`,
+    name: `${str(prod?.nombre) || "Sin nombre"}`,
     product_id: prodId,
     ...(Number.isFinite(safeNum(companyId, NaN)) ? { company_id: safeNum(companyId, NaN) } : {}),
     quantity: safeNum(formData?.cantidad, 1) || 1,

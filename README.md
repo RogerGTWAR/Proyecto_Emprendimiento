@@ -1,4 +1,13 @@
-# Proyecto Emprendimiento
+<div align="center">
+    <img src="frontend/public/Logo.png" width="200" height="200" alt="MateriaLab Logo">
+    <br>
+    <h1 style="color: #111A3B; font-weight: bold;">MateriaLab</h1>
+</div>
+
+# Requisitos del sistema
+
+- Node.js y npm (LTS)
+- PostgreSQL 18
 
 Para ejecutar el programa necesitas seguir los siguientes pasos: 
 
@@ -15,11 +24,26 @@ Ve a la raiz del proyecto y ejecuta el siguiente comando:
 ```bash 
 npm install
 ```
-##Generar el cliente de Prisma
 
-Después de instalar dependencias, ejecuta el siguiente comando para generar el cliente de Prisma:
+## Crear la base de datos
+
+En la raiz del proyecto encontraras el archivo hackathonDB.sql, descargalo 
+y asegurate de ejecutarlo en tu gestor de base de datos de PostgreSQL.
+
+## Crea y reemplaza los archivos .env
+
+Dentro de las carpetas /backend y /frontend encontraras archivos example.env, 
+debes de copiar el contenido de estos archivos y pegarlos en archivos .env que 
+debes crear en la carpeta /backend y /frontend. Luego de pegar el contenido 
+reemplaza cada una de las variables de entorno por tus credenciales.
+
+## Conectar la base de datos con el backend
+
+Ya que la base de datos esta lista y has reemplazado correctamente los valores en el
+archivo .env ejecuta los siguientes comandos en la carpeta /backend del proyecto.
 
 ```bash 
+npx prisma db pull
 npx prisma generate
 ```
 
