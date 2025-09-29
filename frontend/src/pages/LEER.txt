@@ -1,0 +1,50 @@
+leer
+
+se supone que la información no debería añadirse desde aquí por que se debería hacer desde el login cuando se registra, y cuando es por Google debería abrir de igual forma otro formulario para guardar la información de la empresa, luego de llenado eso datos es que se debería sincronizar ese apartado con esa info, dado el caso que ese formulario después del login a través de Google no existe me tomé la libertad de que se pueda añadir desde esa pagina 
+
+De cualquier forma que se inicie sesión, la página de "Mi Empresa" debería funcionar para editar la información supuestamente sincronizada desde antes
+
+Además, dado los pocos datos para añadir a la caracterización de la empresa propongo añadir estos otros atributos 
+
+-- Agregar descripción (texto más largo por si acaso)
+ALTER TABLE companies 
+ADD COLUMN description TEXT NULL;
+
+-- Agregar teléfono (VARCHAR para números internacionales)
+ALTER TABLE companies 
+ADD COLUMN telefono VARCHAR(20) NULL;
+
+-- Agregar dirección
+ALTER TABLE companies 
+ADD COLUMN direccion TEXT NULL;
+
+-- Agregar logo (puede ser URL o path del archivo)
+ALTER TABLE companies 
+ADD COLUMN logo_url VARCHAR(500) NULL;
+
+
+recomendado de otro lado pero que NO USÉ para complementar el deleted_at
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+-- Agregar timestamps de creación y actualización
+ALTER TABLE companies 
+ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+ALTER TABLE companies 
+ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Crear trigger para updated_at (opcional pero recomendado)
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END; 
+
+CREATE TRIGGER update_companies_updated_at 
+    BEFORE UPDATE ON companies 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+	
