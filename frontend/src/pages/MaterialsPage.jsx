@@ -71,23 +71,24 @@ const MaterialsPage = () => {
     setModoEdicion(false);
   };
 
-  const agregarMaterial = async (formUI) => {
-    const creado = await add(formUI);
-    setMostrarFormulario(false);
-    console.log("Material creado:", creado);
-  };
+const agregarMaterial = async (formUI) => {
+  const creado = await add(formUI); 
+  setMostrarFormulario(false);
+  console.log("Material creado:", creado);
+};
 
-  const actualizarMaterial = async (formUI) => {
-    if (!materialAEditar) return;
-    const actualizado = await edit(materialAEditar.id, formUI);
-    setMostrarFormulario(false);
-    setMaterialAEditar(null);
-    setModoEdicion(false);
-    if (vistaDetalle && materialSeleccionado && materialSeleccionado.id === actualizado.id) {
-      setMaterialSeleccionado(actualizado);
-    }
-    console.log("Material actualizado:", actualizado);
-  };
+const actualizarMaterial = async (formUI) => {
+  if (!materialAEditar) return;
+  const actualizado = await edit(materialAEditar.id, formUI);
+  setMostrarFormulario(false);
+  setMaterialAEditar(null);
+  setModoEdicion(false);
+  if (vistaDetalle && materialSeleccionado && materialSeleccionado.id === actualizado.id) {
+    setMaterialSeleccionado(actualizado);
+  }
+  console.log("Material actualizado:", actualizado);
+};
+
 
   const formatearPrecio = (precio) =>
     new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(precio || 0);

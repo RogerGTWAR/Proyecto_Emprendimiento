@@ -99,57 +99,68 @@ export default class ServicesController {
     }
   }
 
-  static async update(req, res) {
-    const { id } = req.params;
-    const { name, cost } = req.body;
+static async update(req, res) {
+  // Normalizar id
+  const rawId = req.params.id;
+  const serviceId = Number(String(rawId ?? "").trim());
 
-    const serviceId = parseInt(id);
+  if (!Number.isFinite(serviceId)) {
+    return res.status(400).json({ ok: false, msg: "El id del servicio debe ser un numero" });
+  }
 
-    if (isNaN(serviceId)) {
-      return res.status(400).json({
-        ok: false,
-        msg: "El id del servicio debe ser un numero"
-      });
-    }
+  // Normalizadores
+  const str = (v) => String(v ?? "").trim();
+  const toNumOr = (v, def) => {
+    const n = Number(String(v ?? "").replace(",", ".").trim());
+    return Number.isFinite(n) ? n : def;
+  };
 
-    const oldService = await prisma.services.findUnique({ where: { id: serviceId } });
+  const { name, cost } = req.body ?? {};
 
-    if (!oldService || oldService.deleted_at !== null) {
+  try {
+    // Buscar solo activos
+    const oldService = await prisma.services.findFirst({
+      where: { id: serviceId, deleted_at: null },
+    });
+
+    if (!oldService) {
       return res.status(404).json({
         ok: false,
-        msg: "No se encontro el servicio que se desea modificar"
+        msg: `No se encontró un servicio activo con id=${serviceId}`,
       });
     }
 
-    if (cost !== undefined && Number(cost) <= 0) {
-      return res.status(400).json({
-        ok: false,
-        msg: "El costo debe ser mayor que 0"
-      });
+    // Validaciones
+    if (name !== undefined && str(name) === "") {
+      return res.status(400).json({ ok: false, msg: "El nombre del servicio no puede estar vacío" });
     }
 
-    try {
-      const service = await prisma.services.update({
-        where: { id: serviceId },
-        data: {
-          name: name ?? oldService.name,
-          cost: cost ?? oldService.cost
-        }
-      });
-
-      res.json({
-        ok: true,
-        msg: "Servicio actualizado correctamente",
-        data: service
-      });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        ok: false,
-        msg: "Server error something went wrong"
-      });
+    if (cost !== undefined) {
+      const costNum = toNumOr(cost, NaN);
+      if (!Number.isFinite(costNum) || costNum <= 0) {
+        return res.status(400).json({ ok: false, msg: "El costo debe ser un número mayor que 0" });
+      }
     }
+
+    const updated = await prisma.services.update({
+      where: { id: serviceId },
+      data: {
+        name: name !== undefined ? str(name) : oldService.name,
+        cost: cost !== undefined ? toNumOr(cost, oldService.cost) : oldService.cost,
+      },
+    });
+
+    return res.json({
+      ok: true,
+      msg: "Servicio actualizado correctamente",
+      data: updated,
+    });
+  } catch (error) {
+    console.error("[services.update] ERROR", error);
+    return res.status(500).json({ ok: false, msg: "Server error something went wrong" });
   }
+}
+
 
   static async delete(req, res) {
     const { id } = req.params;

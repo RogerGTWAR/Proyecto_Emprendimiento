@@ -92,6 +92,7 @@ model process_service {
   id         Int       @id @default(autoincrement())
   process_id Int
   service_id Int
+  cost_service Decimal     
   deleted_at DateTime? @db.Timestamp(6)
   processes  processes @relation(fields: [process_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   services   services  @relation(fields: [service_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -101,6 +102,7 @@ model process_worker {
   id         Int       @id @default(autoincrement())
   process_id Int
   worker_id  Int
+  cost_labor Decimal    
   deleted_at DateTime? @db.Timestamp(6)
   processes  processes @relation(fields: [process_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   workers    workers   @relation(fields: [worker_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -112,6 +114,8 @@ model processes {
   quantity        Int
   product_id      Int
   company_id      Int
+  duration_total_minutes Int             
+  cost_total      Decimal   
   deleted_at      DateTime?         @db.Timestamp(6)
   process_service process_service[]
   process_worker  process_worker[]

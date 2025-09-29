@@ -1,53 +1,103 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import CloseButton from '../ui/CloseButton';
 import ButtonIcon from '../ui/ButtonIcon';
 import DeleteConfirmationModal from '../ui/DeleteConfirmationModal';
 
+const num = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+const money = (v) =>
+  new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' })
+    .format(num(v, 0));
+
+const fullName = (w) => {
+  const byField = w?.name ?? w?.nombre;
+  if (byField) return String(byField);
+
+  const fn = w?.firstname ?? w?.first_name ?? w?.nombre ?? '';
+  const ln = w?.lastname ?? w?.last_name ?? w?.apellido ?? '';
+  return `${fn} ${ln}`.trim() || 'Trabajador';
+};
+
+const ServiceRow = (s) => {
+  const nombre = s?.name ?? s?.nombre ?? s?.services?.name ?? 'Servicio';
+  const cost = num(
+    s?.cost_service ?? s?.monto ?? s?.cost ?? s?.services?.cost,
+    0
+  );
+  return { nombre, cost };
+};
+
 const ProcessDetails = ({ process, onClose, onEdit, onDelete }) => {
   const [showDeleteModal, setIsDeleting] = useState(false);
 
-  const formatearMoneda = (monto) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN'
-    }).format(monto);
-  };
+  const data = useMemo(() => {
+    const nombre = process.nombre ?? process.name ?? 'Proceso';
+    const cantidad = num(process.cantidad ?? process.quantity, 1);
+    const duracionTotal =
+      num(process.duracionTotal ?? process.duracion_total_minutos ?? process.duration_total_minutes, 0);
 
-  const calcularCostoTrabajadores = () => {
-    if (!process.trabajadores || process.trabajadores.length === 0) return 0;
-    
-    const duracionEnHoras = process.duracionTotal / 60;
-    return process.trabajadores.reduce((total, worker) => {
-      return total + ((worker.pago || 0) * duracionEnHoras);
+    const costoTotal =
+      num(process.costoTotal ?? process.costo_total ?? process.cost_total, 0);
+
+    const producto =
+      process.producto ??
+      process.product ??
+      (process.products ? {
+        nombre: process.products.name,
+        estimated_time: process.products.estimated_time,
+        precio: process.products.price,
+        description: process.products.description
+      } : null);
+
+    const servicios = (process.servicios ?? process.process_service ?? []).map(ServiceRow);
+    const trabajadores = (process.trabajadores ?? process.process_worker ?? []).map((w) => {
+      const costLabor = num(w?.cost_labor ?? w?.costo_mano_obra, NaN);
+      const hourly =
+        num(w?.pagoPorHora ?? w?.hourly_fee ?? w?.pago, NaN);
+      return {
+        display: fullName(w),
+        cost_labor: Number.isFinite(costLabor) ? costLabor : (Number.isFinite(hourly) ? hourly : 0),
+        hourly: Number.isFinite(hourly) ? hourly : null,
+        raw: w
+      };
+    });
+
+    return { nombre, cantidad, duracionTotal, costoTotal, producto, servicios, trabajadores };
+  }, [process]);
+
+  const breakdown = useMemo(() => {
+    const horas = data.duracionTotal > 0 ? data.duracionTotal / 60 : 0;
+
+    const materiales =
+      num(data.producto?.totalCost ?? data.producto?.total_cost, NaN);
+    const precioUnit = num(data.producto?.precio ?? data.producto?.price, NaN);
+    const costoMateriales = Number.isFinite(materiales)
+      ? materiales
+      : (Number.isFinite(precioUnit) ? precioUnit * data.cantidad : 0);
+
+    const manoObra = data.trabajadores.reduce((acc, w) => {
+      if (w.hourly != null) {
+        return acc + w.hourly * horas;
+      }
+      return acc + num(w.cost_labor, 0);
     }, 0);
-  };
 
-  const calcularCostoServicios = () => {
-    if (!process.servicios || process.servicios.length === 0) return 0;
-    
-    return process.servicios.reduce((total, service) => {
-      return total + (service.monto || 0);
-    }, 0);
-  };
+    const serviciosTotal = data.servicios.reduce((acc, s) => acc + num(s.cost, 0), 0);
 
-  const handleEditClick = () => {
-    onEdit(process); 
-    onClose();  
-  };
+    const total = num(
+      data.costoTotal,
+      costoMateriales + manoObra + serviciosTotal
+    );
 
-  const handleDeleteClick = () => {
-    setIsDeleting(true);
-  };
-
-  const handleConfirmDelete = () => {
-    onDelete();
-    setIsDeleting(false);
-    onClose();
-  };
-
-  const handleCancelDelete = () => {
-    setIsDeleting(false);
-  };
+    return {
+      materiales: costoMateriales,
+      manoObra,
+      servicios: serviciosTotal,
+      total
+    };
+  }, [data]);
 
   const EditIcon = () => (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,36 +124,38 @@ const ProcessDetails = ({ process, onClose, onEdit, onDelete }) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <h3 className="font-semibold text-gray-800 text-lg mb-3">{process.nombre}</h3>
-                  
+                  <h3 className="font-semibold text-gray-800 text-lg mb-3">{data.nombre}</h3>
+
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <h4 className="text-sm font-medium text-gray-600 mb-1">Cantidad</h4>
-                      <p className="text-lg font-bold text-gray-800">{process.cantidad}</p>
+                      <p className="text-lg font-bold text-gray-800">{data.cantidad}</p>
                     </div>
-                    
+
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <h4 className="text-sm font-medium text-gray-600 mb-1">Duración Total</h4>
-                      <p className="text-lg font-bold text-gray-800">{process.duracionTotal} min</p>
+                      <p className="text-lg font-bold text-gray-800">{data.duracionTotal} min</p>
                     </div>
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h4 className="text-sm font-medium text-gray-600 mb-1">Costo Total Estimado</h4>
                     <p className="text-2xl font-bold text-gray-900">
-                      {formatearMoneda(process.costoTotal)}
+                      {money(data.costoTotal ?? breakdown.total)}
                     </p>
                   </div>
                 </div>
 
-                {process.producto && (
+                {data.producto && (
                   <div className="bg-white rounded-lg p-4 border border-gray-200">
                     <h3 className="text-sm font-medium text-gray-600 mb-2">Producto</h3>
                     <div className="space-y-2">
-                      <p>Nombre: {process.producto.nombre}</p>
-                      <p>Tiempo unitario: {process.producto.estimated_time} min</p>
-                      {process.producto.precio && (
-                        <p><strong>Precio unitario:</strong> {formatearMoneda(process.producto.precio)}</p>
+                      <p>Nombre: {data.producto.nombre ?? data.producto.name}</p>
+                      <p>Tiempo unitario: {num(data.producto.estimated_time, 0)} min</p>
+                      {(data.producto.precio ?? data.producto.price) && (
+                        <p>
+                          <strong>Precio unitario:</strong> {money(data.producto.precio ?? data.producto.price)}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -116,42 +168,45 @@ const ProcessDetails = ({ process, onClose, onEdit, onDelete }) => {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Materiales/Producto:</span>
-                      <span>{formatearMoneda(process.producto?.precio ? process.producto.precio * process.cantidad : 0)}</span>
+                      <span>{money(breakdown.materiales)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Mano de obra:</span>
-                      <span>{formatearMoneda(calcularCostoTrabajadores())}</span>
+                      <span>{money(breakdown.manoObra)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Servicios:</span>
-                      <span>{formatearMoneda(calcularCostoServicios())}</span>
+                      <span>{money(breakdown.servicios)}</span>
                     </div>
                     <div className="border-t pt-2 mt-2 font-semibold flex justify-between">
                       <span>Total:</span>
-                      <span>{formatearMoneda(process.costoTotal)}</span>
+                      <span>{money(breakdown.total)}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-white rounded-lg p-4 border border-gray-200">
                   <h3 className="text-sm font-medium text-gray-600 mb-3">
-                    Trabajadores ({process.trabajadores?.length || 0})
+                    Trabajadores ({(process.trabajadores ?? process.process_worker ?? []).length})
                   </h3>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {process.trabajadores?.map((worker, index) => (
-                      <div key={index} className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
-                        <div className="w-8 h-8 bg-[#209E7F] rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold text-xs">
-                            {worker.nombre?.charAt(0)}{worker.apellido?.charAt(0)}
-                          </span>
+                    {(process.trabajadores ?? process.process_worker ?? []).map((w, idx) => {
+                      const name = fullName(w);
+                      const initials = name.split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+                      const dept = w?.departamento ?? w?.department ?? '';
+                      return (
+                        <div key={idx} className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
+                          <div className="w-8 h-8 bg-[#209E7F] rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold text-xs">{initials || 'M'}</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{name}</p>
+                            {!!dept && <p className="text-xs text-gray-500">{dept}</p>}
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">{worker.nombre} {worker.apellido}</p>
-                          <p className="text-xs text-gray-500">{worker.departamento}</p>
-                        </div>
-                      </div>
-                    ))}
-                    {(!process.trabajadores || process.trabajadores.length === 0) && (
+                      );
+                    })}
+                    {(!(process.trabajadores ?? process.process_worker)?.length) && (
                       <p className="text-gray-500 text-sm text-center py-2">No hay trabajadores</p>
                     )}
                   </div>
@@ -159,19 +214,23 @@ const ProcessDetails = ({ process, onClose, onEdit, onDelete }) => {
 
                 <div className="bg-white rounded-lg p-4 border border-gray-200">
                   <h3 className="text-sm font-medium text-gray-600 mb-3">
-                    Servicios ({process.servicios?.length || 0})
+                    Servicios ({(process.servicios ?? process.process_service ?? []).length})
                   </h3>
                   <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {process.servicios?.map((service, index) => (
-                      <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                        <div>
-                          <p className="text-sm font-medium">{service.nombre}</p>
-                          <p className="text-xs text-gray-500">{service.descripcion}</p>
+                    {(process.servicios ?? process.process_service ?? []).map((s, idx) => {
+                      const { nombre, cost } = ServiceRow(s);
+                      const desc = s?.descripcion ?? s?.description ?? '';
+                      return (
+                        <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <div>
+                            <p className="text-sm font-medium">{nombre}</p>
+                            {!!desc && <p className="text-xs text-gray-500">{desc}</p>}
+                          </div>
+                          <span className="text-sm font-semibold">{money(cost)}</span>
                         </div>
-                        <span className="text-sm font-semibold">{formatearMoneda(service.monto)}</span>
-                      </div>
-                    ))}
-                    {(!process.servicios || process.servicios.length === 0) && (
+                      );
+                    })}
+                    {(!(process.servicios ?? process.process_service)?.length) && (
                       <p className="text-gray-500 text-sm text-center py-2">No hay servicios</p>
                     )}
                   </div>
@@ -179,27 +238,26 @@ const ProcessDetails = ({ process, onClose, onEdit, onDelete }) => {
               </div>
             </div>
 
-               <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6">
-                <ButtonIcon
-                  variant="primary"
-                  onClick={handleEditClick}
-                  icon={<EditIcon />}
-                  iconPosition="left"
-                  className="flex-1"
-                >
-                  Editar Proceso
-                </ButtonIcon>
-                
-                <ButtonIcon
-                  variant="secondary"
-                  onClick={handleDeleteClick}
-                  icon={<DeleteIcon />}
-                  iconPosition="left"
-                  className="flex-1"
-                >
-                  Eliminar
-                </ButtonIcon>
-              
+            <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6">
+              <ButtonIcon
+                variant="primary"
+                onClick={() => { onEdit(process); onClose(); }}
+                icon={<EditIcon />}
+                iconPosition="left"
+                className="flex-1"
+              >
+                Editar Proceso
+              </ButtonIcon>
+
+              <ButtonIcon
+                variant="secondary"
+                onClick={() => setIsDeleting(true)}
+                icon={<DeleteIcon />}
+                iconPosition="left"
+                className="flex-1"
+              >
+                Eliminar
+              </ButtonIcon>
             </div>
           </div>
         </div>
@@ -207,9 +265,9 @@ const ProcessDetails = ({ process, onClose, onEdit, onDelete }) => {
 
       <DeleteConfirmationModal
         isOpen={showDeleteModal}
-        onClose={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-        itemName={process.nombre}
+        onClose={() => setIsDeleting(false)}
+        onConfirm={() => { onDelete(); setIsDeleting(false); onClose(); }}
+        itemName={data.nombre}
         loading={false}
       />
     </>

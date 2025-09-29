@@ -1,3 +1,0 @@
-Realizar el modulo de empresa.
-Se realizan la tabla de procesos, servicios y trabajadores.
-Hacerlo con programacion orientada a objeto

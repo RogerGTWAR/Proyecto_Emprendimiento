@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import CloseButton from "../ui/CloseButton";
-import { api } from '../../data/api.js';
-import { createMaterial, updateMaterial } from '../../data/materials.js';
 
 const MaterialForm = ({ onClose, initialData, isEdit = false, onSaved }) => {
   const [formData, setFormData] = useState({
@@ -22,9 +20,8 @@ const MaterialForm = ({ onClose, initialData, isEdit = false, onSaved }) => {
   const [focusedField, setFocusedField] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const [units, setUnits] = useState([]);
-  const [loadingUnits, setLoadingUnits] = useState(false);
-  const [unitsError, setUnitsError] = useState('');
+  const [loadingUnits] = useState(false);
+  const [unitsError] = useState('');
 
   useEffect(() => {
     if (initialData) {
@@ -40,35 +37,11 @@ const MaterialForm = ({ onClose, initialData, isEdit = false, onSaved }) => {
         imagen: null, 
         material_unit_id: initialData.material_unit_id ?? ''
       }));
-      if (initialData.imagen) setPreviewUrl(initialData.imagen);
+      setPreviewUrl(initialData.imagen || '');
     } else {
       setPreviewUrl('');
     }
   }, [initialData]);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoadingUnits(true);
-        setUnitsError('');
-        const res = await api('/materials');
-        const list = Array.isArray(res)
-          ? res
-          : Array.isArray(res?.data)
-          ? res.data
-          : Array.isArray(res?.units)
-          ? res.units
-          : [];
-        if (mounted) setUnits(list);
-      } catch (e) {
-        if (mounted) setUnitsError(e?.message || 'No se pudieron cargar las unidades');
-      } finally {
-        if (mounted) setLoadingUnits(false);
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,7 +50,6 @@ const MaterialForm = ({ onClose, initialData, isEdit = false, onSaved }) => {
       [name]: name === "material_unit_id" ? Number(value) || "" : value
     }));
   };
-
 
   const handleFocus = (fieldName) => setFocusedField(fieldName);
   const handleBlur = () => setFocusedField(null);
@@ -108,25 +80,20 @@ const MaterialForm = ({ onClose, initialData, isEdit = false, onSaved }) => {
       nombre: formData.nombre,
       descripcion: formData.descripcion,
       costo: formData.costo,
-      waste_percentage: 0,  
-      company_id: 1,       
+      waste_percentage: 0,
+      company_id: 1,
       material_unit_id: formData.material_unit_id,
       cantidad: formData.cantidad,
       medidas: formData.medidas,
       tamaño: formData.tamaño,
-      imagen: formData.imagen,
+      imagen: formData.imagen, // File/Blob si el usuario subió
       type: formData.tipo,
     };
 
     setSubmitting(true);
     try {
-      let saved;
-      if (isEdit && initialData?.id) {
-        saved = await updateMaterial(initialData.id, payload);
-      } else {
-        saved = await createMaterial(payload);
-      }
-      onSaved?.(saved);
+      // 👇 Ahora NO llamamos a la API aquí
+      await onSaved?.(payload); // El padre hará create/update y actualizará el estado con la respuesta del backend
       onClose?.();
     } catch (err) {
       console.error(err);
