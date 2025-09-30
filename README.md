@@ -25,6 +25,17 @@ Ve a la raiz del proyecto y ejecuta el siguiente comando:
 npm install
 ```
 
+Instala las dependencias al backend y frontend:
+```bash 
+cd backend
+npm install
+```
+```bash 
+cd ../frontend
+npm install
+```
+
+
 ## Crear la base de datos
 
 En la raiz del proyecto encontraras el archivo hackathonDB.sql, descargalo 
