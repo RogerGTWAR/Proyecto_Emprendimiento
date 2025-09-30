@@ -109,130 +109,100 @@ export default class MaterialController {
     });
   }
 
-  static async create(req, res) {
+static async create(req, res) {
+  const {
+    name,
+    description,
+    waste_percentage,
+    company_id,
+    unit_cost,
+    material_unit_id,
+    tags,
+    quantity,
+    measurements,
+    size,
+    type
+  } = req.body;
 
-    const {
-      name,
-      description,
-      waste_percentage,
-      company_id,
-      unit_cost,
-      material_unit_id,
-      tags,
-      quantity,
-      measurements,
-      size,
-      type
-    } = req.body;
+  const companyId = parseInt(company_id);
+  if (isNaN(companyId)) {
+    return res.status(400).json({ ok: false, msg: "El id de la empresa debe ser un numero" });
+  }
 
-    const companyId = parseInt(company_id);
+  const unitMaterialId = parseInt(material_unit_id);
+  if (isNaN(unitMaterialId)) {
+    return res.status(400).json({ ok: false, msg: "El id de la unidad de medida debe ser un numero" });
+  }
 
-    if (isNaN(companyId)) {
-      return res.status(400).json({
-        ok: false,
-        msg: "El id de la empresa debe ser un numero"
-      });
+  if (!await prisma.companies.findUnique({ where: { id: companyId } })) {
+    return res.status(400).json({ ok: false, msg: "La empresa especificada no existe o fue dada de baja" });
+  }
+
+  if (!await prisma.material_units.findFirst({ where: { id: unitMaterialId } })) {
+    return res.status(400).json({ ok: false, msg: "Se debe especificar una unidad de medida correcta" });
+  }
+
+  try {
+    const file = req.file;
+    let newName = null;
+
+    if (file) {
+      const ext = path.extname(file.originalname);   
+      newName = crypto.randomUUID() + ext;
+      await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer);
     }
 
-    const unitMaterialId = parseInt(material_unit_id);
+    let material = await prisma.materials.create({
+      data: {
+        name,
+        description,
+        unit_cost,
+        waste_percentage,
+        material_unit_id: unitMaterialId,
+        material_img: (newName ? `http://localhost:3000/uploads/material_images/${newName}` : null)
+                      ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg',
+        company_id: companyId,
+        quantity: Number.isFinite(parseInt(quantity)) ? parseInt(quantity) : 0,
+        measurements: (measurements ?? null),
+        size: (size ?? null),
+        type: (type ?? null)
+      }
+    });
 
-    if (isNaN(unitMaterialId)) {
-      return res.status(400).json({
-        ok: false,
-        msg: "El id de la unidad de medida debe ser un numero"
-      });
+    if (tags && tags.length > 0) {
+      const ok = await TagController.attachTagsToItem(tags, material.id, 'material');
+      if (!ok) {
+        return res.status(400).json({ ok: false, msg: "Las tags especificadas son invalidas" });
+      }
     }
 
-    if (!await prisma.companies.findUnique({ where: { id: companyId } })) {
-      return res.status(400).json({
-        ok: false,
-        msg: "La empresa especificada no existe o fue dada de baja"
-      });
+    material = await prisma.materials.findUnique({
+      where: { id: material.id },
+      include: {
+        material_tag: { include: { tags: { select: { name: true } } } },
+        material_units: { select: { unit_name: true } }
+      }
+    });
+
+    material = {
+      ...material,
+      material_tag: material.material_tag.map(m_t => m_t.tags.name),
+      material_units: material.material_units?.unit_name
     };
 
-    if (!await prisma.material_units.findFirst({ where: { id: unitMaterialId } })) {
-      return res.status(400).json({
-        ok: false,
-        msg: "Se debe especificar una unidad de medida correcta"
-      });
-    }
 
-    try {
+    return res.status(201).json({
+      ok: true,
+      msg: "Material creado correctamente",
+      data: material
+    });
 
-      const file = req.file;
-      let newName = null;
-
-      if (file) {
-        const ext = path.extname(file.originalname);
-        newName = crypto.randomUUID() + ext;
-
-        await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer);
-      }
-
-      let material = await prisma.materials.create({
-        data: {
-          name,
-          description,
-          unit_cost,
-          waste_percentage,
-          material_unit_id: unitMaterialId,
-          material_img: (newName ? `http://localhost:3000/uploads/material_images/${newName}` : null) ?? 'https://www.shutterstock.com/image-vector/default-ui-image-placeholder-wireframes-600nw-1037719192.jpg', // <- fix comillas
-          company_id: companyId,
-          quantity: Number.isFinite(parseInt(quantity)) ? parseInt(quantity) : 0,
-          measurements: (measurements ?? null),
-          size: (size ?? null),
-          type: (type ?? null)
-        }
-      });
-
-      if (tags && tags.length > 0) {
-        if (!await TagController.attachTagsToItem(tags, material.id, 'material')) {
-          res.status(400).json({
-            ok: false,
-            msg: "Las tags especificadas son invalidas"
-          })
-        }
-      }
-
-      material = await prisma.materials.findUnique({
-        where: {
-          id: material.id
-        },
-        include: {
-          material_tag: {
-            include: {
-              tags: {
-                select: { name: true }
-              }
-            }
-          },
-          material_units: {
-            select: { unit_name: true }
-          }
-        }
-      });
-
-      material = {
-        ...material,
-        material_tag: material.material_tag.map(m_t => m_t.tags.name),
-        material_units: material.material_units.unit_name
-      };
-        newName = crypto.randomUUID() + ext;
-
-      res.status(201).json({
-        ok: true,
-        msg: "Material creado correctamente",
-        data: material
-      });
-
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        ok: false,
-        msg: "Server error something went wrong"
-      });
-    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ ok: false, msg: "Server error something went wrong" });
   }
+}
+
 
   static async update(req, res) {
 
