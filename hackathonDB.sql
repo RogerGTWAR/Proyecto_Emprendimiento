@@ -73,8 +73,8 @@ CREATE TABLE products (
     profit_margin DECIMAL NOT NULL CHECK (profit_margin > 0),
     product_img VARCHAR(255),
     company_id INT NOT NULL REFERENCES companies(id),
-	total_cost NUMERIC(12,2) NOT NULL DEFAULT 0
-    deleted_at TIMESTAMP NULL,
+	total_cost NUMERIC(12,2) NOT NULL DEFAULT 0,
+    deleted_at TIMESTAMP NULL
 
 );
 
