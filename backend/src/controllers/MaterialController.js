@@ -217,6 +217,7 @@ export default class MaterialController {
         material_tag: material.material_tag.map(m_t => m_t.tags.name),
         material_units: material.material_units.unit_name
       };
+        newName = crypto.randomUUID() + ext;
 
       res.status(201).json({
         ok: true,
@@ -297,7 +298,7 @@ export default class MaterialController {
         const ext = path.extname(file.originalname);
         newName = crypto.randomUUID() + ext;
 
-        await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer) 
+        await fs.writeFile(`./public/uploads/material_images/${newName}`, file.buffer)
       };
 
 

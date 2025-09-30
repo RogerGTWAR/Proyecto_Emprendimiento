@@ -286,6 +286,7 @@ export default class ProductController {
   }
 
   static async update(req, res) {
+
     const productId = Number(req.params.id);
     if (!Number.isFinite(productId)) {
       return res.status(400).json({ ok: false, msg: "El id de producto debe ser un numero" });
@@ -316,6 +317,7 @@ export default class ProductController {
     const descStr = description !== undefined ? toStr(description) : oldProduct.description;
 
     try {
+
       let imgUrl = oldProduct.product_img;
       if (req.file) {
         const ext = path.extname(req.file.originalname);
